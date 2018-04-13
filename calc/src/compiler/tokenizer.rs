@@ -1,11 +1,9 @@
 
 use std::str::Chars;
-
 use compiler::def::*;
-use compiler::error::*;
 
 
-struct TokenizerContext<'a> {
+struct TokenizeContext<'a> {
     stream: Chars<'a>,
     cur_text: &'a str,  // rest of the text beginning from cur
     cur: Option<char>,
@@ -13,9 +11,9 @@ struct TokenizerContext<'a> {
 }
 
 
-impl<'a> TokenizerContext<'a> {
-    fn new(text: &'a str, filename: &'a str) -> TokenizerContext<'a> {
-        TokenizerContext {
+impl<'a> TokenizeContext<'a> {
+    fn new(text: &'a str, filename: &'a str) -> Self {
+        TokenizeContext {
             stream: text.chars(),
             cur_text: text,
             cur: None,
@@ -39,17 +37,17 @@ impl<'a> TokenizerContext<'a> {
 
         return self.cur;
     }
+}
 
-    pub fn error<T>(&self, description: String) -> ParseResult<'a, T> {
-        Err(ParseError::new(
-            self.loc.filename,
-            self.loc.line,
-            description))
+
+impl<'a> Location<'a> for TokenizeContext<'a> {
+    fn loc(&self) -> Loc<'a> {
+        self.loc
     }
 }
 
 
-fn parse_int<'a>(ctx: &mut TokenizerContext<'a>) -> Token<'a> {
+fn parse_int<'a>(ctx: &mut TokenizeContext<'a>) -> Token<'a> {
     let loc = ctx.loc;
     let mut r = 0;
     
@@ -73,11 +71,11 @@ fn is_word_start(ch: char) -> bool {
 }
 
 
-fn parse_ident<'a>(ctx: &mut TokenizerContext<'a>) -> Token<'a> {
+fn parse_ident<'a>(ctx: &mut TokenizeContext<'a>) -> Token<'a> {
     let loc = ctx.loc;
     let text = ctx.cur_text;
 
-    assert!(is_word_start(ctx.cur.unwrap()));
+    debug_assert!(is_word_start(ctx.cur.unwrap()));
     let mut len = 1;
     ctx.next();
     
@@ -94,10 +92,10 @@ fn parse_ident<'a>(ctx: &mut TokenizerContext<'a>) -> Token<'a> {
 }
 
 
-pub fn tokenize<'a>(text: &'a str, filename: &'a str) -> ParseResult<'a, Vec<Token<'a>>> {
+pub fn tokenize<'a>(text: &'a str, filename: &'a str) -> TokenizeResult<'a> {
     use self::Token::*;
 
-    let mut ctx = TokenizerContext::new(text, filename);
+    let mut ctx = TokenizeContext::new(text, filename);
     let mut r: Vec<Token> = Vec::new();
     
     // pop first char
@@ -134,74 +132,6 @@ pub fn tokenize<'a>(text: &'a str, filename: &'a str) -> ParseResult<'a, Vec<Tok
         }
     }
 
-    r.push(Eof); // finish this stream by Eof token
+    r.push(Eof(ctx.loc)); // finish this stream by Eof token
     return Ok(r);
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use compiler::def::Token::*;
-
-    const FILENAME: &str = "<test>";
-
-    fn loc(line: i32) -> Loc<'static> {
-        Loc {
-            filename: FILENAME,
-            line: line,
-        }
-    }
-
-    fn tokenize(text: &str) -> Vec<Token> {
-        super::tokenize(text, FILENAME)
-            .expect(&format!("text should compile: '{}'", text))
-    }
-
-    #[test]
-    fn empty_stream() {
-        let tkn = tokenize("");
-
-        assert_eq!(vec![Eof], tkn);
-    }
-
-    #[test]
-    fn parse_int() {
-        let tkn = tokenize("42");
-
-        assert_eq!(vec![Int(loc(1), 42), Eof], tkn);
-    }
-
-    #[test]
-    fn calc_lines() {
-        let tkn = tokenize(r#"
-            4
-            2
-        "#);
-
-        assert_eq!(vec![
-            Int(loc(2), 4),
-            Int(loc(3), 2),
-            Eof,
-        ], tkn);
-    }
-
-    #[test]
-    fn breackets_and_ops() {
-        let symbols = "(+-/%*)";
-        let tkn = tokenize(symbols);
-
-        let expected: Vec<Token<'static>> = symbols.chars().map(|ch| {
-            Symbol(loc(1), ch)
-        }).chain(vec![Eof]).collect();
-
-        assert_eq!(expected, tkn);
-    }
-
-    #[test]
-    fn identifier() {
-        let tkn = tokenize("x");
-
-        assert_eq!(vec![Ident(loc(1), "x"), Eof], tkn);
-    }
 }
