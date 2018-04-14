@@ -32,6 +32,31 @@ pub enum Token<'a> {
 
 #[derive(Debug, PartialEq)]
 pub enum AST<'a> {
+    Block(Loc<'a>, Vec<AST<'a>>),
+
+    // statements
+    DeclVar {
+        loc: Loc<'a>,
+        name: &'a str,
+        init: Box<AST<'a>>,
+    },
+
+    Assign {
+        loc: Loc<'a>,
+        name: &'a str,
+        init: Box<AST<'a>>,
+    },
+
+    Return(Loc<'a>, Box<AST<'a>>),
+
+    Func {
+        loc: Loc<'a>,
+        name: &'a str,
+        args: Vec<&'a str>,
+        body: Box<AST<'a>>,
+    },
+
+    // expression
 	Num(Loc<'a>, i32),
 	Var(Loc<'a>, &'a str),
 	
@@ -59,6 +84,16 @@ pub trait Location<'a> {
             description: String::from(description),
             loc: self.loc(),
         })
+    }
+}
+
+
+impl<'a> Token<'a> {
+    pub fn is_symbol(&self, expected: char) -> bool {
+        match *self {
+            Token::Symbol(_loc, ch) => (ch == expected),
+            _ => false,
+        }
     }
 }
 

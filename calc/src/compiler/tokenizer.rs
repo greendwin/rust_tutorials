@@ -118,10 +118,10 @@ pub fn tokenize<'a>(text: &'a str, filename: &'a str) -> TokenizeResult<'a> {
         }
 
         match ch {
-            '(' | ')' | '[' | ']' |
-            ':' | '?' | ',' | '.' | 
-            '+' | '-' | '*' | '/' |
-            '%' | '!' | '~' => {
+            '(' | ')' | '[' | ']' | '{' | '}' |
+            ':' | '?' | ',' | '.' | ';' | '=' |
+            '+' | '-' | '*' | '/' | '%' |
+            '!' | '~' | '|' | '&' => {
                 r.push(Symbol(ctx.loc, ch));
                 ctx.next();
             }
@@ -135,3 +135,4 @@ pub fn tokenize<'a>(text: &'a str, filename: &'a str) -> TokenizeResult<'a> {
     r.push(Eof(ctx.loc)); // finish this stream by Eof token
     return Ok(r);
 }
+

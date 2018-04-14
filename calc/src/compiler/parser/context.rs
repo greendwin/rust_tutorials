@@ -15,7 +15,7 @@ impl<'a> Location<'a> for ParseContext<'a> {
 }
 
 
-type MatchResult<'a> = Result<(), ParseError<'a>>;
+type MatchResult<'a, T=()> = Result<T, ParseError<'a>>;
 
 
 impl<'a> ParseContext<'a> {
@@ -30,8 +30,12 @@ impl<'a> ParseContext<'a> {
 		&self.tokens[self.offset]
 	}
 
-	pub fn error_unexpected_token<T>(&self) -> Result<T, ParseError<'a>> {
-		self.error(format!("'{}': unexpected token", self.token()))
+    pub fn error_unexpected_token<T>(&self) -> Result<T, ParseError<'a>> {
+        if let Token::Eof(_loc) = *self.token() {
+		    self.error_str("unexpected end of file")
+        } else {
+    		self.error(format!("'{}': unexpected token", self.token()))
+        }
 	}
 
 	pub fn match_eof(&self) -> MatchResult<'a> {
@@ -45,15 +49,33 @@ impl<'a> ParseContext<'a> {
 	}
 
 	pub fn match_symbol(&mut self, expected: char) -> MatchResult<'a> {
-		if let Token::Symbol(_loc, ch) = *self.token() {
-			if ch == expected {
-				self.match_any();
-				return Ok(());
-			}
+		if self.token().is_symbol(expected) {
+			self.match_any();
+			return Ok(());
 		} 
 
 		self.error(format!("'{}': unexpected token, expected symbol '{}'", self.token(), expected))
 	}
+
+    pub fn match_ident(&mut self) -> MatchResult<'a, (Loc<'a>, &'a str)> {
+        if let Token::Ident(loc, name) = *self.token() {
+            self.match_any();
+            Ok((loc, name))
+        } else {
+		    self.error(format!("'{}': identifier expected", self.token()))
+        }
+    }
+
+    pub fn match_keyword(&mut self, expected: &str) -> MatchResult<'a, Loc<'a>> {
+        if let Token::Ident(loc, name) = *self.token() {
+            if name == expected {
+                self.match_any();
+                return Ok(loc);
+            }
+        }
+        
+        self.error(format!("'{}': expected keyword '{}'", self.token(), expected))
+}
 
 	pub fn match_any(&mut self) {
 		if let Token::Eof(_loc) = *self.token() {

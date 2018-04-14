@@ -16,7 +16,7 @@ fn loc(line: i32) -> Loc<'static> {
 
 fn tokenize(text: &str) -> Vec<Token> {
     tokenizer::tokenize(text, FILENAME)
-        .expect(&format!("text should compile: '{}'", text))
+        .expect("text should compile")
 }
 
 
@@ -53,7 +53,7 @@ fn calc_lines() {
 
 #[test]
 fn breackets_and_ops() {
-    let symbols = "(+-/%*)";
+    let symbols = "{(+-/%*&|=)};";
     let tkn = tokenize(symbols);
 
     let expected: Vec<Token<'static>> = symbols.chars().map(|ch| {
@@ -70,3 +70,4 @@ fn parse_ident() {
 
     assert_eq!(vec![Ident(loc(1), "x"), Eof(loc(1))], tkn);
 }
+

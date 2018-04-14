@@ -1,40 +1,75 @@
+use compiler;
+use compiler::def::*;
+use compiler::tests::checks::*;
+
+
+fn parse_it<'a>(text: &'a str) -> AST<'a> {
+    compiler::parse(text, "<test>")
+        .expect("parse should not fail")
+}
 
 
 #[test]
 fn empty() {
-	let statements = parse_it(r#""#);
-	assert_eq!(0, statements.len());
+	let block = parse_it("");
+
+    check_block(&block, &[]);
 }
 
 
 #[test]
 fn let_statement() {
-	let statements = parse_it(r#"
-		let x = 5;
-	"#);
+	let block = parse_it("let x = 5;");
 
-	assert_eq!(1, statements.len());
-	check_let(statements[0], "x", |x| check_num(x, 5));
+    check_block(
+        &block, &[
+            Box::new(|st| check_let(st, "x", |p| check_num(p, 5)))
+        ]);
 }
 
 
 #[test]
 fn assign_statement() {
-	let statements = parse_it(r#"
-		x = 5;
-	"#);
+	let block = parse_it("x = 5;");
 
-	assert_eq!(1, statements.len());
-	check_assign(statements[0], "x", |x| check_num(x, 5));
+    check_block(
+        &block, &[
+            Box::new(|st| check_assign(st, "x", |p| check_num(p, 5)))
+        ]);
 }
 
 
 #[test]
 fn fn_statement() {
-	let statements = parse_it(r#"
-		fn foo() {}
-	"#);
+	let block = parse_it("fn foo() {}");
 
-	assert_eq!(1, statements.len());
-	check_fn(statements[0], "foo", vec![], |x| ());
+    check_block(
+        &block, &[
+            Box::new(|st| check_func(st, "foo", &[], |_x| ()))
+        ]);
 }
+
+
+#[test]
+fn function_body () {
+	let block = parse_it(r#"
+        fn foo(a, b) {
+            return a * b;
+        }
+    "#);
+
+    check_block(
+        &block, &[Box::new(
+            |expr| check_func(
+                expr, "foo", &["a", "b"],
+                |body| check_block(body, &[Box::new(
+                    |p| check_return(
+                        p, |ret| check_op(
+                            ret, '*',
+                            |l| check_var(l, "a"),
+                            |r| check_var(r, "b")))),
+                ]))),
+        ]);
+}
+
+

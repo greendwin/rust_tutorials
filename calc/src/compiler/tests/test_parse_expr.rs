@@ -31,7 +31,7 @@ fn expr_binops() {
 		let text = format!("42 {} x", op);
 		let expr = parse_expr(&text);
 
-		check_binop(
+		check_op(
 			&expr, op,
 			|l| check_num(l, 42),
 			|r| check_var(r, "x"));
@@ -43,16 +43,16 @@ fn expr_binops() {
 fn expr_binops_priority() {
 	let expr = parse_expr("5*x + 9 - 7*b");
 
-	check_binop(
+	check_op(
 		&expr, '-',
-		|l| check_binop(
+		|l| check_op(
 			l, '+',
-			|l1| check_binop(
+			|l1| check_op(
 				l1, '*',
 				|l2| check_num(l2, 5),
 				|r2| check_var(r2, "x")),
 			|r1| check_num(r1, 9)),
-		|r| check_binop(
+		|r| check_op(
 			r, '*',
 			|l1| check_num(l1, 7),
 			|r1| check_var(r1, "b")));
@@ -63,9 +63,9 @@ fn expr_binops_priority() {
 fn expr_binops_stack_add() {
 	let expr = parse_expr("a + b - c");
 
-	check_binop(
+	check_op(
 		&expr, '-',
-		|l| check_binop(
+		|l| check_op(
 			l, '+',
 			|l1| check_var(l1, "a"),
 			|r1| check_var(r1, "b")),
@@ -77,11 +77,11 @@ fn expr_binops_stack_add() {
 fn expr_binops_stack_mul() {
 	let expr = parse_expr("a * b / c % d");
 
-	check_binop(
+	check_op(
 		&expr, '%',
-		|l| check_binop(
+		|l| check_op(
 			l, '/',
-			|l1| check_binop(
+			|l1| check_op(
 				l1, '*',
 				|l2| check_var(l2, "a"),
 				|r2| check_var(r2, "b")),
@@ -94,10 +94,10 @@ fn expr_binops_stack_mul() {
 fn parentheses() {
 	let expr = parse_expr("a * (b + c)");
 
-	check_binop(
+	check_op(
 		&expr, '*',
 		|l| check_var(l, "a"),
-		|r| check_binop(
+		|r| check_op(
 			r, '+',
 			|l1| check_var(l1, "b"),
 			|r1| check_var(r1, "c")));
