@@ -1,6 +1,6 @@
-
 use std::str::Chars;
-use compiler::def::*;
+use compiler::*;
+use self::Token::*;
 
 
 struct TokenizeContext<'a> {
@@ -62,7 +62,7 @@ fn parse_int<'a>(ctx: &mut TokenizeContext<'a>) -> Token<'a> {
         ctx.next();
     }
 
-    Token::Int(loc, r)
+    Int(loc, r)
 }
 
 
@@ -88,13 +88,11 @@ fn parse_ident<'a>(ctx: &mut TokenizeContext<'a>) -> Token<'a> {
         ctx.next();
     }
 
-    Token::Ident(loc, &text[..len])
+    Ident(loc, &text[..len])
 }
 
 
 pub fn tokenize<'a>(text: &'a str, filename: &'a str) -> TokenizeResult<'a> {
-    use self::Token::*;
-
     let mut ctx = TokenizeContext::new(text, filename);
     let mut r: Vec<Token> = Vec::new();
     

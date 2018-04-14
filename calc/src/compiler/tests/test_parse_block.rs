@@ -1,6 +1,6 @@
 use compiler;
-use compiler::def::*;
-use compiler::tests::checks::*;
+use compiler::*;
+use super::checks::*;
 
 
 fn parse_it<'a>(text: &'a str) -> AST<'a> {

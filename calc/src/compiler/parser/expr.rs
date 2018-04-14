@@ -1,8 +1,5 @@
-
-use compiler::def::*;
-use compiler::def::AST::*;
-
-use compiler::parser::context::*;
+use compiler::*;
+use self::AST::*;
 
 
 pub fn parse_expr<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {

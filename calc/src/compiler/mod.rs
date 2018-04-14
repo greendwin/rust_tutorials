@@ -1,19 +1,37 @@
 
-mod def;
+mod location;
+mod error;
+mod token;
+mod ast;
+mod value;
+
 mod tokenizer;
 mod parser;
+mod execute;
 
 #[cfg(test)]
 mod tests;
 
-use compiler::parser::context::ParseContext;
 
+pub use self::location::Loc;
+pub use self::location::Location;
+pub use self::token::Token;
+pub use self::ast::AST;
+pub use self::value::Value;
 
-// pub type AST<'a> = def::AST<'a>;
-pub type ParseResult<'a> = def::ParseResult<'a>;
+pub use self::parser::context::ParseContext;
+pub use self::execute::context::ExecContext;
+
+pub use self::error::Error;
+
+pub type TokenizeResult<'a> = Result<Vec<Token<'a>>, Error<'a>>;
+pub type ParseResult<'a> = Result<AST<'a>, Error<'a>>;
+pub type ExecResult<'a> = Result<Value, Error<'a>>;
 
 
 pub fn parse_expr<'a>(text: &'a str, filename: &'a str) -> ParseResult<'a> {
+    use compiler::parser::context::ParseContext;
+
 	let tokens = tokenizer::tokenize(text, filename)?;
 	let mut ctx = ParseContext::new(tokens);
 
@@ -40,3 +58,7 @@ pub fn parse<'a>(text: &'a str, filename: &'a str) -> ParseResult<'a> {
 	Ok(expr)
 }
 
+
+pub fn execute<'a>(prog: &AST<'a>, ctx: &mut ExecContext) -> ExecResult<'a> {
+    Ok(Value::None)
+}

@@ -1,5 +1,4 @@
-
-use compiler::def::*;
+use compiler::*;
 
 
 pub struct ParseContext<'a> {
@@ -15,7 +14,7 @@ impl<'a> Location<'a> for ParseContext<'a> {
 }
 
 
-type MatchResult<'a, T=()> = Result<T, ParseError<'a>>;
+type MatchResult<'a, T=()> = Result<T, Error<'a>>;
 
 
 impl<'a> ParseContext<'a> {
@@ -30,7 +29,7 @@ impl<'a> ParseContext<'a> {
 		&self.tokens[self.offset]
 	}
 
-    pub fn error_unexpected_token<T>(&self) -> Result<T, ParseError<'a>> {
+    pub fn error_unexpected_token<T>(&self) -> Result<T, Error<'a>> {
         if let Token::Eof(_loc) = *self.token() {
 		    self.error_str("unexpected end of file")
         } else {

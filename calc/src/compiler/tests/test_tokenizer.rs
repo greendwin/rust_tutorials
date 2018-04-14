@@ -1,6 +1,6 @@
+use compiler::*;
 use compiler::tokenizer;
-use compiler::def::*;
-use compiler::def::Token::*;
+use self::Token::*;
 
 
 const FILENAME: &str = "<test>";

@@ -1,6 +1,6 @@
 use compiler;
-use compiler::def::*;
-use compiler::tests::checks::*;
+use compiler::*;
+use super::checks::*;
 
 
 fn parse_expr(text: &str) -> AST {

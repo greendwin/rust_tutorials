@@ -1,7 +1,5 @@
-use compiler::def::*;
-use compiler::def::AST::*;
-
-type Checker<'a> = Fn(&AST<'a>);
+use compiler::*;
+use self::AST::*;
 
 
 pub fn check_var(expr: &AST, expected: &str) {
@@ -39,7 +37,7 @@ pub fn check_op<'a, F1, F2>(
 }
 
 
-pub fn check_block<'a>(expr: &AST<'a>, checkers: &[Box<Checker<'a>>]) {
+pub fn check_block<'a>(expr: &AST<'a>, checkers: &[Box<Fn(&AST<'a>)>]) {
     if let Block(_loc, ref lst) = *expr {
         if lst.len() != checkers.len() {
             panic!("Wrong elements count: {} expected: {:?}", checkers.len(), expr);
