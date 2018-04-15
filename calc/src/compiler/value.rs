@@ -1,20 +1,26 @@
+use std::rc::Rc;
+use compiler::*;
 
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Val {
     None,
     Num(i32),
+    Func(Rc<FuncDecl>),
 }
 
 
 impl Val {
-//    pub fn is_none(&self) -> bool {
-//        *self == Val::None
-//    }
-
     pub fn is_num(&self) -> bool {
         match *self {
-            Val::Num(_val) => true,
+            Val::Num(..) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_func(&self) -> bool {
+        match *self {
+            Val::Func{..} => true,
             _ => false,
         }
     }
@@ -26,3 +32,4 @@ impl Val {
         }
     }
 }
+

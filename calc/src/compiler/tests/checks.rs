@@ -3,7 +3,7 @@ use self::AST::*;
 
 
 pub fn check_var(expr: &AST, expected: &str) {
-	if let Var{ name, .. } = *expr {
+	if let Var{ ref name, .. } = *expr {
 		assert_eq!(expected, name);
 	} else {
 		panic!("Var type expected: {:?}", expr);
@@ -20,11 +20,11 @@ pub fn check_num(expr: &AST, expected: i32) {
 }
 
 
-pub fn check_op<'a, F1, F2>(
-	expr: &AST<'a>,
+pub fn check_op<F1, F2>(
+	expr: &AST,
 	expected_op: char,
 	left: F1, right: F2)
-    where F1: Fn(&AST<'a>), F2: Fn(&AST<'a>)
+    where F1: Fn(&AST), F2: Fn(&AST)
 {
 	if let BinOp{loc: _, op, left: ref l, right: ref r} = *expr {
 		assert_eq!(expected_op, op);
@@ -37,7 +37,7 @@ pub fn check_op<'a, F1, F2>(
 }
 
 
-pub fn check_block<'a>(expr: &AST<'a>, checkers: &[Box<Fn(&AST<'a>)>]) {
+pub fn check_block(expr: &AST, checkers: &[Box<Fn(&AST)>]) {
     if let Block{ ref body, .. } = *expr {
         if body.len() != checkers.len() {
             panic!("Wrong elements count: {} expected: {:?}", checkers.len(), expr);
@@ -52,10 +52,10 @@ pub fn check_block<'a>(expr: &AST<'a>, checkers: &[Box<Fn(&AST<'a>)>]) {
 }
 
 
-pub fn check_let<'a, F>(expr: &AST<'a>, expected_name: &str, check: F)
-    where F: Fn(&AST<'a>)
+pub fn check_let<F>(expr: &AST, expected_name: &str, check: F)
+    where F: Fn(&AST)
 {
-    if let DeclVar{ loc: _, name, ref init } = *expr {
+    if let DeclVar{ ref name, ref init, .. } = *expr {
         assert_eq!(expected_name, name);
 
         check(init);
@@ -65,10 +65,10 @@ pub fn check_let<'a, F>(expr: &AST<'a>, expected_name: &str, check: F)
 }
 
 
-pub fn check_assign<'a, F>(expr: &AST<'a>, expected_name: &str, check: F)
-    where F: Fn(&AST<'a>)
+pub fn check_assign<F>(expr: &AST, expected_name: &str, check: F)
+    where F: Fn(&AST)
 {
-    if let Assign{ loc: _, name, ref init } = *expr {
+    if let Assign{ ref name, ref init, .. } = *expr {
         assert_eq!(expected_name, name);
 
         check(init);
@@ -78,8 +78,8 @@ pub fn check_assign<'a, F>(expr: &AST<'a>, expected_name: &str, check: F)
 }
 
 
-pub fn check_return<'a, F>(expr: &AST<'a>, check: F)
-    where F: Fn(&AST<'a>)
+pub fn check_return<F>(expr: &AST, check: F)
+    where F: Fn(&AST)
 {
     if let Return{ ref ret, .. } = *expr {
         check(ret);
@@ -89,14 +89,20 @@ pub fn check_return<'a, F>(expr: &AST<'a>, check: F)
 }
 
 
-pub fn check_func<'a, F>(expr: &AST<'a>, expected_name: &str, expected_args: &[&str], check_body: F)
-    where F: Fn(&AST<'a>)
+pub fn check_func<F>(expr: &AST, expected_name: &str, expected_args: &[&str], check_body: F)
+    where F: Fn(&AST)
 {
-    if let Func{ loc: _, name, ref args, ref body } = *expr {
-        assert_eq!(expected_name, name);
-        assert_eq!(expected_args, args as &[&str]);
+    if let Func{ ref decl, .. } = *expr {
+        assert_eq!(expected_name, decl.name);
 
-        check_body(body);
+        if expected_name.len() != decl.name.len() {
+            panic!("wrong arguments count, expected {}: {:?}", expected_args.len(), decl.args);
+        }
+        for (exp, x) in expected_args.iter().zip(&decl.args) {
+            assert_eq!(*exp, x);
+        }
+
+        check_body(&decl.body);
     } else {
         panic!("Assign type expected: {:?}", expr);
     }

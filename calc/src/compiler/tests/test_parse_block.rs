@@ -3,7 +3,7 @@ use compiler::*;
 use super::checks::*;
 
 
-fn parse_it<'a>(text: &'a str) -> AST<'a> {
+fn parse_it(text: &str) -> AST {
     compiler::parse(text, "<test>")
         .expect("parse should not fail")
 }

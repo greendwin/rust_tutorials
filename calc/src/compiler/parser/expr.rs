@@ -2,24 +2,27 @@ use compiler::*;
 use self::AST::*;
 
 
-pub fn parse_expr<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
+pub fn parse_expr<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 	parse_expr_add(ctx)
 }
 
 
-fn parse_expr_add<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
+fn parse_expr_add<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 	let mut left = parse_expr_mul(ctx)?;
 
-	while let Token::Symbol(loc, op) = *ctx.token() {
+	while let Token::Symbol(_, op) = *ctx.token() {
 		if op != '+' && op != '-' {
 			break;
 		}
 
+        let loc = ctx.loc().clone();
 		ctx.match_any();
+
 		let right = parse_expr_mul(ctx)?;
 
 		left = BinOp {
-			loc, op,
+			loc: loc.clone(),
+            op,
 			left: Box::new(left),
 			right: Box::new(right),
 		};
@@ -29,15 +32,17 @@ fn parse_expr_add<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
 }
 
 
-fn parse_expr_mul<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
+fn parse_expr_mul<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 	let mut left = parse_val(ctx)?;
 
-	while let Token::Symbol(loc, op) = *ctx.token() {
+	while let Token::Symbol(_, op) = *ctx.token() {
 		if op != '*' && op != '/' && op != '%' {
 			break;
 		}
 
+        let loc = ctx.loc().clone();
 		ctx.match_any();
+
 		let right = parse_val(ctx)?;
 
 		left = BinOp {
@@ -51,21 +56,26 @@ fn parse_expr_mul<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
 }
 
 
-fn parse_val<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
+fn parse_val<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 	match *ctx.token() {
-		Token::Ident(loc, name) => {
+		Token::Ident(_, name) => {
+            let loc = ctx.loc().clone();
 			ctx.match_any();
 
-			Ok(Var{ loc, name })
+			Ok(Var{
+               loc,
+               name: String::from(name),
+            })
 		}
 
-		Token::Int(loc, val) => {
+		Token::Int(_, val) => {
+            let loc = ctx.loc().clone();
 			ctx.match_any();
 
 			Ok(Num{loc, val})
 		}
 
-		Token::Symbol(_loc, '(') => {
+		Token::Symbol(_, '(') => {
 			ctx.match_any();
 			let expr = parse_expr(ctx)?;
 			ctx.match_symbol(')')?;

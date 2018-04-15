@@ -1,27 +1,38 @@
+use std::rc::Rc;
 use super::error::*;
 
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Loc<'a> {
-    pub filename: &'a str,
+#[derive(Debug, Clone, PartialEq)]
+pub struct Loc {
+    pub filename: Rc<String>,
     pub line: i32,
 }
 
 
-pub trait Location<'a> {
-	fn loc(&self) -> Loc<'a>;
+impl Loc {
+    pub fn new(filename: &str, line: i32) -> Self {
+        Loc {
+            filename: Rc::new(String::from(filename)),
+            line,
+        }
+    }
+}
 
-    fn error<T>(&self, description: String) -> Result<T, Error<'a>> {
+
+pub trait Location {
+	fn loc(&self) -> &Loc;
+
+    fn error<T>(&self, description: String) -> Result<T, Error> {
         Err(Error {
             description: description,
-            loc: self.loc(),
+            loc: self.loc().clone(),
         })
     }
 
-    fn error_str<T>(&self, description: &str) -> Result<T, Error<'a>> {
+    fn error_str<T>(&self, description: &str) -> Result<T, Error> {
         Err(Error {
             description: String::from(description),
-            loc: self.loc(),
+            loc: self.loc().clone(),
         })
     }
 }

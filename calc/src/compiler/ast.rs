@@ -1,71 +1,78 @@
+use std::rc::Rc;
 use super::location::*;
 
 
 #[derive(Debug, PartialEq)]
-pub enum AST<'a> {
+pub enum AST {
     Block {
-        loc: Loc<'a>,
-        body: Vec<AST<'a>>,
+        loc: Loc,
+        body: Vec<AST>,
     },
 
     // statements
     DeclVar {
-        loc: Loc<'a>,
-        name: &'a str,
-        init: Box<AST<'a>>,
+        loc: Loc,
+        name: String,
+        init: Box<AST>,
     },
 
     Assign {
-        loc: Loc<'a>,
-        name: &'a str,
-        init: Box<AST<'a>>,
+        loc: Loc,
+        name: String,
+        init: Box<AST>,
     },
 
     Return {
-        loc: Loc<'a>,
-        ret: Box<AST<'a>>,
+        loc: Loc,
+        ret: Box<AST>,
     },
 
     Func {
-        loc: Loc<'a>,
-        name: &'a str,
-        args: Vec<&'a str>,
-        body: Box<AST<'a>>,
+        loc: Loc,
+        decl: Rc<FuncDecl>,
     },
 
     // expression
     Num {
-        loc: Loc<'a>,
+        loc: Loc,
         val: i32,
     },
 
     Var {
-        loc: Loc<'a>,
-        name: &'a str,
+        loc: Loc,
+        name: String,
     },
 	
     BinOp {
-        loc: Loc<'a>,
+        loc: Loc,
         op: char,
-        left: Box<AST<'a>>,
-        right: Box<AST<'a>>,
+        left: Box<AST>,
+        right: Box<AST>,
     },
 }
 
 
-impl<'a> Location<'a> for AST<'a> {
-    fn loc(&self) -> Loc<'a> {
+#[derive(Debug, PartialEq)]
+pub struct FuncDecl {
+    pub name: String,
+    pub args: Vec<String>,
+    pub body: AST,
+}
+
+
+impl Location for AST {
+    fn loc(&self) -> &Loc {
         use self::AST::*;
 
         match *self {
-            Block{ loc, .. } => loc,
-            DeclVar{ loc, .. } => loc,
-            Assign{ loc, .. } => loc,
-            Return{ loc, .. } => loc,
-            Func{ loc, .. } => loc,
-            Num{ loc, .. } => loc,
-            Var{ loc, .. } => loc,
-            BinOp{ loc, .. } => loc,
+            Block  { ref loc, .. } => loc,
+            DeclVar{ ref loc, .. } => loc,
+            Assign { ref loc, .. } => loc,
+            Return { ref loc, .. } => loc,
+            Func   { ref loc, .. } => loc,
+            Num    { ref loc, .. } => loc,
+            Var    { ref loc, .. } => loc,
+            BinOp  { ref loc, .. } => loc,
         }
     }
 }

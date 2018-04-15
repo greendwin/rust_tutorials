@@ -7,20 +7,17 @@ struct TokenizeContext<'a> {
     stream: Chars<'a>,
     cur_text: &'a str,  // rest of the text beginning from cur
     cur: Option<char>,
-    loc: Loc<'a>,
+    loc: Loc,
 }
 
 
 impl<'a> TokenizeContext<'a> {
-    fn new(text: &'a str, filename: &'a str) -> Self {
+    fn new(text: &'a str, filename: &str) -> Self {
         TokenizeContext {
             stream: text.chars(),
             cur_text: text,
             cur: None,
-            loc: Loc {
-                filename: filename,
-                line: 1,
-            }
+            loc: Loc::new(filename, 1),
         }
     }
 
@@ -50,15 +47,15 @@ impl<'a> TokenizeContext<'a> {
 }
 
 
-impl<'a> Location<'a> for TokenizeContext<'a> {
-    fn loc(&self) -> Loc<'a> {
-        self.loc
+impl<'a> Location for TokenizeContext<'a> {
+    fn loc(&self) -> &Loc {
+        &self.loc
     }
 }
 
 
 fn parse_int<'a>(ctx: &mut TokenizeContext<'a>) -> Token<'a> {
-    let loc = ctx.loc;
+    let loc = ctx.loc.clone();
     let mut r = 0;
     
     while let Some(ch) = ctx.cur {
@@ -82,7 +79,7 @@ fn is_word_start(ch: char) -> bool {
 
 
 fn parse_ident<'a>(ctx: &mut TokenizeContext<'a>) -> Token<'a> {
-    let loc = ctx.loc;
+    let loc = ctx.loc.clone();
     let text = ctx.cur_text;
 
     debug_assert!(is_word_start(ctx.cur.unwrap()));
@@ -102,7 +99,7 @@ fn parse_ident<'a>(ctx: &mut TokenizeContext<'a>) -> Token<'a> {
 }
 
 
-pub fn tokenize<'a>(text: &'a str, filename: &'a str) -> TokenizeResult<'a> {
+pub fn tokenize<'a>(text: &'a str, filename: &str) -> TokenizeResult<'a> {
     let mut ctx = TokenizeContext::new(text, filename);
     let mut r: Vec<Token> = Vec::new();
     
@@ -143,7 +140,7 @@ pub fn tokenize<'a>(text: &'a str, filename: &'a str) -> TokenizeResult<'a> {
             ':' | '?' | ',' | '.' | ';' | '=' |
             '+' | '-' | '*' | '/' | '%' |
             '!' | '~' | '|' | '&' => {
-                r.push(Symbol(ctx.loc, ch));
+                r.push(Symbol(ctx.loc.clone(), ch));
                 ctx.next();
             }
 

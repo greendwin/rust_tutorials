@@ -4,20 +4,20 @@ use super::location::*;
 
 
 #[derive(Debug)]
-pub struct Error<'a> {
+pub struct Error {
     pub description: String,
-    pub loc: Loc<'a>,
+    pub loc: Loc,
 }
 
 
-impl<'a> error::Error for Error<'a> {
+impl error::Error for Error {
     fn description(&self) -> &str {
         &self.description
     }
 }
 
 
-impl<'a> Display for Error<'a> {
+impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}({}): {}", self.loc.filename, self.loc.line, self.description)
     }

@@ -3,7 +3,7 @@ use compiler;
 use compiler::*;
 
 
-fn exec_with<'a>(ctx: &mut ExecContext<'a>, text: &'a str) {
+pub fn exec_with(ctx: &mut ExecContext, text: &str) {
     let prog = compiler::parse(text, "<test>")
         .expect("parse should not fail");
 
@@ -12,7 +12,7 @@ fn exec_with<'a>(ctx: &mut ExecContext<'a>, text: &'a str) {
 }
 
 
-fn exec<'a>(text: &'a str) -> ExecContext {
+pub fn exec(text: &str) -> ExecContext {
     let mut ctx = ExecContext::new();
     exec_with(&mut ctx, text);
 
@@ -21,7 +21,7 @@ fn exec<'a>(text: &'a str) -> ExecContext {
 }
 
 
-fn expect_error(text: &str, expected_words: &str) {
+pub fn expect_error(text: &str, expected_words: &str) {
     let prog = compiler::parse(text, "<test>")
         .expect("parse should not fail");
 
@@ -75,7 +75,7 @@ fn decl_var_check_duplicate() {
 #[test]
 fn assign_val() {
     let mut ctx = ExecContext::new();
-    ctx.scope.insert("x", Val::None);
+    ctx.set_var("x", Val::None);
 
     exec_with(&mut ctx, r#"
         x = 42;

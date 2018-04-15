@@ -6,11 +6,8 @@ use self::Token::*;
 const FILENAME: &str = "<test>";
 
 
-fn loc(line: i32) -> Loc<'static> {
-    Loc {
-        filename: FILENAME,
-        line: line,
-    }
+fn loc(line: i32) -> Loc {
+    Loc::new(FILENAME, line)
 }
 
 

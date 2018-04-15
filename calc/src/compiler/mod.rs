@@ -17,6 +17,7 @@ pub use self::location::Loc;
 pub use self::location::Location;
 pub use self::token::Token;
 pub use self::ast::AST;
+pub use self::ast::FuncDecl;
 pub use self::value::Val;
 
 pub use self::parser::context::ParseContext;
@@ -24,12 +25,12 @@ pub use self::execute::context::ExecContext;
 
 pub use self::error::Error;
 
-pub type TokenizeResult<'a> = Result<Vec<Token<'a>>, Error<'a>>;
-pub type ParseResult<'a> = Result<AST<'a>, Error<'a>>;
-pub type ExecResult<'a> = Result<Val, Error<'a>>;
+pub type TokenizeResult<'a> = Result<Vec<Token<'a>>, Error>;
+pub type ParseResult = Result<AST, Error>;
+pub type ExecResult = Result<Val, Error>;
 
 
-pub fn parse_expr<'a>(text: &'a str, filename: &'a str) -> ParseResult<'a> {
+pub fn parse_expr(text: &str, filename: &str) -> ParseResult {
     use compiler::parser::context::ParseContext;
 
 	let tokens = tokenizer::tokenize(text, filename)?;
@@ -45,7 +46,7 @@ pub fn parse_expr<'a>(text: &'a str, filename: &'a str) -> ParseResult<'a> {
 }
 
 
-pub fn parse<'a>(text: &'a str, filename: &'a str) -> ParseResult<'a> {
+pub fn parse(text: &str, filename: &str) -> ParseResult {
 	let tokens = tokenizer::tokenize(text, filename)?;
 	let mut ctx = ParseContext::new(tokens);
 

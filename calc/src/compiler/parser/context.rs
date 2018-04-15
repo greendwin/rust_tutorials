@@ -7,14 +7,14 @@ pub struct ParseContext<'a> {
 }
 
 
-impl<'a> Location<'a> for ParseContext<'a> {
-    fn loc(&self) -> Loc<'a> {
+impl<'a> Location for ParseContext<'a> {
+    fn loc(&self) -> &Loc {
         self.tokens[self.offset].loc()
     }
 }
 
 
-type MatchResult<'a, T=()> = Result<T, Error<'a>>;
+type MatchResult<'a, T=()> = Result<T, Error>;
 
 
 impl<'a> ParseContext<'a> {
@@ -29,8 +29,8 @@ impl<'a> ParseContext<'a> {
 		&self.tokens[self.offset]
 	}
 
-    pub fn error_unexpected_token<T>(&self) -> Result<T, Error<'a>> {
-        if let Token::Eof(_loc) = *self.token() {
+    pub fn error_unexpected_token<T>(&self) -> Result<T, Error> {
+        if let Token::Eof(_) = *self.token() {
 		    self.error_str("unexpected end of file")
         } else {
     		self.error(format!("'{}': unexpected token", self.token()))
@@ -38,7 +38,7 @@ impl<'a> ParseContext<'a> {
 	}
 
 	pub fn match_eof(&self) -> MatchResult<'a> {
-		if let Token::Eof(_loc) = *self.token() {
+		if let Token::Eof(_) = *self.token() {
 			// don't increment offset since it's the end
 
 			Ok(())
@@ -56,19 +56,23 @@ impl<'a> ParseContext<'a> {
 		self.error(format!("'{}': unexpected token, expected symbol '{}'", self.token(), expected))
 	}
 
-    pub fn match_ident(&mut self) -> MatchResult<'a, (Loc<'a>, &'a str)> {
-        if let Token::Ident(loc, name) = *self.token() {
+    pub fn match_ident(&mut self) -> MatchResult<'a, (Loc, &'a str)> {
+        if let Token::Ident(_, name) = *self.token() {
+            let loc = self.loc().clone();
             self.match_any();
+
             Ok((loc, name))
         } else {
 		    self.error(format!("'{}': identifier expected", self.token()))
         }
     }
 
-    pub fn match_keyword(&mut self, expected: &str) -> MatchResult<'a, Loc<'a>> {
-        if let Token::Ident(loc, name) = *self.token() {
+    pub fn match_keyword(&mut self, expected: &str) -> MatchResult<'a, Loc> {
+        if let Token::Ident(_, name) = *self.token() {
             if name == expected {
+                let loc = self.loc().clone();
                 self.match_any();
+
                 return Ok(loc);
             }
         }
@@ -77,7 +81,7 @@ impl<'a> ParseContext<'a> {
 }
 
 	pub fn match_any(&mut self) {
-		if let Token::Eof(_loc) = *self.token() {
+		if let Token::Eof(_) = *self.token() {
 			panic!("Trying to match Eof");
 		}
 
@@ -85,3 +89,4 @@ impl<'a> ParseContext<'a> {
 		self.offset += 1;
 	}
 }
+
