@@ -3,7 +3,7 @@ use self::AST::*;
 
 
 pub fn check_var(expr: &AST, expected: &str) {
-	if let Var(_loc, name) = *expr {
+	if let Var{ name, .. } = *expr {
 		assert_eq!(expected, name);
 	} else {
 		panic!("Var type expected: {:?}", expr);
@@ -81,7 +81,7 @@ pub fn check_assign<'a, F>(expr: &AST<'a>, expected_name: &str, check: F)
 pub fn check_return<'a, F>(expr: &AST<'a>, check: F)
     where F: Fn(&AST<'a>)
 {
-    if let Return(_loc, ref ret) = *expr {
+    if let Return{ ref ret, .. } = *expr {
         check(ret);
     } else {
         panic!("Return type expected: {:?}", expr);

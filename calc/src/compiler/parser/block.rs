@@ -46,7 +46,7 @@ fn parse_st_return<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
 
     ctx.match_symbol(';')?;
 
-    Ok(Return(loc, Box::new(expr)))
+    Ok(Return{ loc, ret: Box::new(expr) })
 }
 
 

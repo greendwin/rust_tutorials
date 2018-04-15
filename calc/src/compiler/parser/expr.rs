@@ -56,7 +56,7 @@ fn parse_val<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
 		Token::Ident(loc, name) => {
 			ctx.match_any();
 
-			Ok(Var(loc, name))
+			Ok(Var{ loc, name })
 		}
 
 		Token::Int(loc, val) => {

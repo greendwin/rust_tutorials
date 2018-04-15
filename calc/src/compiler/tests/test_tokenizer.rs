@@ -71,3 +71,21 @@ fn parse_ident() {
     assert_eq!(vec![Ident(loc(1), "x"), Eof(loc(1))], tkn);
 }
 
+
+#[test]
+fn skip_comments() {
+    let symbols = r#"
+        abc // skip
+        def
+    "#;
+    let tkn = tokenize(symbols);
+
+    let expected = vec![
+        Ident(loc(2), "abc"),
+        Ident(loc(3), "def"),
+        Eof(loc(4)),
+    ];
+
+    assert_eq!(expected, tkn);
+}
+

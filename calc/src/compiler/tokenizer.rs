@@ -37,6 +37,16 @@ impl<'a> TokenizeContext<'a> {
 
         return self.cur;
     }
+
+    fn is_next(&self, expected: char) -> bool {
+        let mut st = self.stream.clone();
+
+        if let Some(ch) = st.next() {
+            return ch == expected;
+        }
+
+        return false;
+    }
 }
 
 
@@ -113,6 +123,19 @@ pub fn tokenize<'a>(text: &'a str, filename: &'a str) -> TokenizeResult<'a> {
         if is_word_start(ch) {
            r.push(parse_ident(&mut ctx));
            continue;
+        }
+
+        if ch == '/' && ctx.is_next('/') {
+            // comment found, skip it until eol
+            while let Some(ch) = ctx.cur {
+                if ch == '\n' {
+                    break;
+                }
+
+                ctx.next();
+            }
+
+            continue;
         }
 
         match ch {

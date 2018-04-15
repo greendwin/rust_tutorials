@@ -21,7 +21,10 @@ pub enum AST<'a> {
         init: Box<AST<'a>>,
     },
 
-    Return(Loc<'a>, Box<AST<'a>>),
+    Return {
+        loc: Loc<'a>,
+        ret: Box<AST<'a>>,
+    },
 
     Func {
         loc: Loc<'a>,
@@ -36,7 +39,10 @@ pub enum AST<'a> {
         val: i32,
     },
 
-    Var(Loc<'a>, &'a str),
+    Var {
+        loc: Loc<'a>,
+        name: &'a str,
+    },
 	
     BinOp {
         loc: Loc<'a>,
@@ -55,11 +61,11 @@ impl<'a> Location<'a> for AST<'a> {
             Block{ loc, .. } => loc,
             DeclVar{ loc, .. } => loc,
             Assign{ loc, .. } => loc,
-            Return(loc, ..) => loc,
+            Return{ loc, .. } => loc,
             Func{ loc, .. } => loc,
             Num{ loc, .. } => loc,
-            Var(loc, ..) => loc,
-            BinOp{loc, ..} => loc,
+            Var{ loc, .. } => loc,
+            BinOp{ loc, .. } => loc,
         }
     }
 }
