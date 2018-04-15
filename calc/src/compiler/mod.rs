@@ -17,7 +17,7 @@ pub use self::location::Loc;
 pub use self::location::Location;
 pub use self::token::Token;
 pub use self::ast::AST;
-pub use self::value::Value;
+pub use self::value::Val;
 
 pub use self::parser::context::ParseContext;
 pub use self::execute::context::ExecContext;
@@ -26,7 +26,7 @@ pub use self::error::Error;
 
 pub type TokenizeResult<'a> = Result<Vec<Token<'a>>, Error<'a>>;
 pub type ParseResult<'a> = Result<AST<'a>, Error<'a>>;
-pub type ExecResult<'a> = Result<Value, Error<'a>>;
+pub type ExecResult<'a> = Result<Val, Error<'a>>;
 
 
 pub fn parse_expr<'a>(text: &'a str, filename: &'a str) -> ParseResult<'a> {
@@ -59,6 +59,5 @@ pub fn parse<'a>(text: &'a str, filename: &'a str) -> ParseResult<'a> {
 }
 
 
-pub fn execute<'a>(prog: &AST<'a>, ctx: &mut ExecContext) -> ExecResult<'a> {
-    Ok(Value::None)
-}
+pub use self::execute::execute;
+

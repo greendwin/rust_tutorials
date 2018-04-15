@@ -1,21 +1,16 @@
+use std::collections::HashMap;
 use compiler::*;
 
 
-pub struct Var<'a> {
-    name: &'a str,
-    value: Value,
-}
-
-
 pub struct ExecContext<'a> {
-    pub scope: Vec<Var<'a>>,
+    pub scope: HashMap<&'a str, Val>,
 }
 
 
 impl<'a> ExecContext<'a> {
     pub fn new() -> Self {
         ExecContext {
-            scope: Vec::new(),
+            scope: HashMap::new(),
         }
     }
 }

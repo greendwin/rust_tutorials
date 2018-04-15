@@ -5,7 +5,7 @@ use self::AST::*;
 
 pub fn parse_block<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
     let loc = ctx.loc();    // store block beginning
-    let mut lst: Vec<AST<'a>> = Vec::new();
+    let mut body: Vec<AST<'a>> = Vec::new();
 
     while let Token::Ident(_loc, name) = *ctx.token() {
         let st = match name {
@@ -15,10 +15,10 @@ pub fn parse_block<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
             _        => parse_st_assign(ctx)?,
         };
 
-        lst.push(st);
+        body.push(st);
     }
 
-    Ok(Block(loc, lst))
+    Ok(Block{loc, body})
 }
 
 

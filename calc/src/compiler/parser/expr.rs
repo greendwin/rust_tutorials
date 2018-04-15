@@ -62,7 +62,7 @@ fn parse_val<'a>(ctx: &mut ParseContext<'a>) -> ParseResult<'a> {
 		Token::Int(loc, val) => {
 			ctx.match_any();
 
-			Ok(Num(loc, val))
+			Ok(Num{loc, val})
 		}
 
 		Token::Symbol(_loc, '(') => {

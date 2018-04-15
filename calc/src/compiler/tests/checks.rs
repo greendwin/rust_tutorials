@@ -12,7 +12,7 @@ pub fn check_var(expr: &AST, expected: &str) {
 
 
 pub fn check_num(expr: &AST, expected: i32) {
-	if let Num(_loc, val) = *expr {
+	if let Num{ val, .. } = *expr {
 		assert_eq!(expected, val);
 	} else {
 		panic!("Num type expected: {:?}", expr);
@@ -38,12 +38,12 @@ pub fn check_op<'a, F1, F2>(
 
 
 pub fn check_block<'a>(expr: &AST<'a>, checkers: &[Box<Fn(&AST<'a>)>]) {
-    if let Block(_loc, ref lst) = *expr {
-        if lst.len() != checkers.len() {
+    if let Block{ ref body, .. } = *expr {
+        if body.len() != checkers.len() {
             panic!("Wrong elements count: {} expected: {:?}", checkers.len(), expr);
         }
 
-        for (st, ch) in lst.iter().zip(checkers) {
+        for (st, ch) in body.iter().zip(checkers) {
             (ch)(&st);
         }
     } else {

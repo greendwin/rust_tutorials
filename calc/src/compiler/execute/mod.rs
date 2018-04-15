@@ -1,23 +1,41 @@
+
 pub mod context;
 
-// use compiler::*;
+use compiler::*;
+use self::AST::*;
 
 
-pub enum Value {
-    None,
-}
+pub fn execute<'a>(expr: &AST<'a>, ctx: &mut ExecContext<'a>) -> ExecResult<'a> {
+    match *expr {
+        Block{ ref body, .. } => {
+            for expr in body {
+                execute(expr, ctx)?;
+            }
+        }
 
+        DeclVar{ name, ref init, .. } => {
+            // TODO: error on redefine
+            let init = execute(init, ctx)?;
 
-pub struct ExecContext {
-    scope: Vec<Value>,
-}
+            ctx.scope.insert(name, init);
+        }
 
+        Assign{ name, ref init, .. } => {
+            // TODO: error on undefined
+            let init = execute(init, ctx)?;
 
-impl ExecContext {
-    pub fn new() -> Self {
-        ExecContext {
-            scope: Vec::new(),
+            ctx.scope.insert(name, init);
+        }
+
+        Num{ val, .. } => {
+            return Ok(Val::Num(val));
+        }
+
+        _ => {
+            return expr.error(format!("AST node not implemented: {:?}", expr));
         }
     }
+
+    Ok(Val::None)
 }
 

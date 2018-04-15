@@ -1,6 +1,8 @@
 
 
-pub enum Value {
+#[derive(Debug, PartialEq)]
+pub enum Val {
     None,
+    Num(i32),
 }
 
