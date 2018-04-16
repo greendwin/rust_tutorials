@@ -37,3 +37,9 @@ pub trait Location {
     }
 }
 
+
+impl Location for Loc {
+    fn loc(&self) -> &Loc {
+        self
+    }
+}

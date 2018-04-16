@@ -26,5 +26,19 @@ fn call_func() {
 }
 
 
+#[test]
+fn call_func_with_args() {
+    let ctx = exec(r#"
+        fn add(a, b) {
+            return a + b;
+        }
+
+        let x = add(2, 3);
+    "#);
+
+    assert_eq!(Val::Num(5), ctx.scope["x"]);
+}
+
+
 // TODO: misplaced: return, break, continue
-// TODO: scopes
+// TODO: nested scopes

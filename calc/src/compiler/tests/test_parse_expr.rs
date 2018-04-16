@@ -102,3 +102,27 @@ fn parentheses() {
 			|l1| check_var(l1, "b"),
 			|r1| check_var(r1, "c")));
 }
+
+
+#[test]
+fn call_func() {
+    let expr = parse_expr("foo()");
+
+    check_call(&expr, "foo", &[]);
+}
+
+
+#[test]
+fn call_func_with_args() {
+    let expr = parse_expr("foo(42, x + y)");
+
+    check_call(&expr, "foo", &[
+        Box::new(|p| check_num(p, 42)),
+        Box::new(|p| check_op(
+            p, '+',
+            |l| check_var(l, "x"),
+            |r| check_var(r, "y"))),
+    ]);
+}
+
+

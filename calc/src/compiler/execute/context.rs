@@ -14,6 +14,10 @@ impl ExecContext {
         }
     }
 
+    pub fn new_nested(&self) -> Self {
+        Self::new()
+    }
+
     pub fn set_var(&mut self, name: &str, val: Val) {
         self.scope.insert(String::from(name), val);
     }

@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::fmt;
 use compiler::*;
 
 
@@ -33,3 +34,13 @@ impl Val {
     }
 }
 
+
+impl fmt::Display for Val {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Val::None => write!(f, "None"),
+            Val::Num(val) => write!(f, "{}", val),
+            Val::Func(ref decl) => write!(f, "fn {}", decl.name),
+        }
+    }
+}

@@ -29,6 +29,10 @@ impl<'a> ParseContext<'a> {
 		&self.tokens[self.offset]
 	}
 
+    pub fn get_next(&self) -> &Token<'a> {
+        &self.tokens[self.offset + 1]
+    }
+
     pub fn error_unexpected_token<T>(&self) -> Result<T, Error> {
         if let Token::Eof(_) = *self.token() {
 		    self.error_str("unexpected end of file")
@@ -78,15 +82,17 @@ impl<'a> ParseContext<'a> {
         }
         
         self.error(format!("'{}': expected keyword '{}'", self.token(), expected))
-}
+    }
 
-	pub fn match_any(&mut self) {
+	pub fn match_any(&mut self) -> Loc {
 		if let Token::Eof(_) = *self.token() {
 			panic!("Trying to match Eof");
 		}
 
 		debug_assert!(self.offset < self.tokens.len());
 		self.offset += 1;
+
+        self.tokens[self.offset - 1].loc().clone()
 	}
 }
 

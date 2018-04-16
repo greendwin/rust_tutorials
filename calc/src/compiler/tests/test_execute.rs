@@ -7,8 +7,10 @@ pub fn exec_with(ctx: &mut ExecContext, text: &str) {
     let prog = compiler::parse(text, "<test>")
         .expect("parse should not fail");
 
-    compiler::execute(&prog, ctx)
-        .expect("execution should not fail");
+    compiler::execute(ctx, &prog)
+        .map_err(|err| {
+            panic!("execution should not fail: {}", err.description);
+        }).unwrap();
 }
 
 
@@ -26,7 +28,7 @@ pub fn expect_error(text: &str, expected_words: &str) {
         .expect("parse should not fail");
 
     let mut ctx = ExecContext::new();
-    let r = compiler::execute(&prog, &mut ctx);
+    let r = compiler::execute(&mut ctx, &prog);
 
     match r {
         Ok(_) => {
@@ -135,5 +137,14 @@ fn mul_div_mod() {
     assert_eq!(Val::Num(10), ctx.scope["x"]);
     assert_eq!(Val::Num(3), ctx.scope["y"]);
     assert_eq!(Val::Num(2), ctx.scope["z"]);
+}
+
+
+#[test]
+fn add_mismatched_types() {
+    expect_error(r#"
+        fn foo() {}
+        let x = foo + 5;
+    "#, "type mismatch foo 5");
 }
 

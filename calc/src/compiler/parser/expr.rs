@@ -15,9 +15,7 @@ fn parse_expr_add<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 			break;
 		}
 
-        let loc = ctx.loc().clone();
-		ctx.match_any();
-
+        let loc = ctx.match_any();
 		let right = parse_expr_mul(ctx)?;
 
 		left = BinOp {
@@ -40,9 +38,7 @@ fn parse_expr_mul<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 			break;
 		}
 
-        let loc = ctx.loc().clone();
-		ctx.match_any();
-
+        let loc = ctx.match_any();
 		let right = parse_val(ctx)?;
 
 		left = BinOp {
@@ -59,8 +55,11 @@ fn parse_expr_mul<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 fn parse_val<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 	match *ctx.token() {
 		Token::Ident(_, name) => {
-            let loc = ctx.loc().clone();
-			ctx.match_any();
+            if ctx.get_next().is_symbol('(') {
+                return parse_func_call(ctx);
+            }
+
+            let loc = ctx.match_any();
 
 			Ok(Var{
                loc,
@@ -69,8 +68,7 @@ fn parse_val<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 		}
 
 		Token::Int(_, val) => {
-            let loc = ctx.loc().clone();
-			ctx.match_any();
+            let loc = ctx.match_any();
 
 			Ok(Num{loc, val})
 		}
@@ -85,3 +83,32 @@ fn parse_val<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
 		_ => ctx.error_unexpected_token(),
 	}
 }
+
+
+fn parse_func_call<'a>(ctx: &mut ParseContext<'a>) -> ParseResult {
+    let (loc, name) = ctx.match_ident()?;
+    let mut args: Vec<AST> = Vec::new();
+
+    ctx.match_symbol('(')?;
+
+    if !ctx.token().is_symbol(')') {
+        loop {
+            let expr = parse_expr(ctx)?;
+            args.push(expr);
+
+            if !ctx.token().is_symbol(',') {
+                break;
+            }
+            ctx.match_symbol(',')?;
+        }
+    }
+
+    ctx.match_symbol(')')?;
+
+    Ok(Call{
+       loc,
+       name: String::from(name),
+       args,
+    })
+}
+

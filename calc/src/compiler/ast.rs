@@ -42,6 +42,12 @@ pub enum AST {
         loc: Loc,
         name: String,
     },
+
+    Call {
+        loc: Loc,
+        name: String,
+        args: Vec<AST>,
+    },
 	
     BinOp {
         loc: Loc,
@@ -65,14 +71,15 @@ impl Location for AST {
         use self::AST::*;
 
         match *self {
-            Block  { ref loc, .. } => loc,
-            DeclVar{ ref loc, .. } => loc,
-            Assign { ref loc, .. } => loc,
-            Return { ref loc, .. } => loc,
-            Func   { ref loc, .. } => loc,
-            Num    { ref loc, .. } => loc,
-            Var    { ref loc, .. } => loc,
-            BinOp  { ref loc, .. } => loc,
+            Block   { ref loc, .. } => loc,
+            DeclVar { ref loc, .. } => loc,
+            Assign  { ref loc, .. } => loc,
+            Return  { ref loc, .. } => loc,
+            Func    { ref loc, .. } => loc,
+            Num     { ref loc, .. } => loc,
+            Var     { ref loc, .. } => loc,
+            Call    { ref loc, .. } => loc,
+            BinOp   { ref loc, .. } => loc,
         }
     }
 }

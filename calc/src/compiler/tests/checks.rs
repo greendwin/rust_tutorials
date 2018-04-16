@@ -37,21 +37,6 @@ pub fn check_op<F1, F2>(
 }
 
 
-pub fn check_block(expr: &AST, checkers: &[Box<Fn(&AST)>]) {
-    if let Block{ ref body, .. } = *expr {
-        if body.len() != checkers.len() {
-            panic!("Wrong elements count: {} expected: {:?}", checkers.len(), expr);
-        }
-
-        for (st, ch) in body.iter().zip(checkers) {
-            (ch)(&st);
-        }
-    } else {
-        panic!("Block type expected: {:?}", expr);
-    }
-}
-
-
 pub fn check_let<F>(expr: &AST, expected_name: &str, check: F)
     where F: Fn(&AST)
 {
@@ -95,7 +80,7 @@ pub fn check_func<F>(expr: &AST, expected_name: &str, expected_args: &[&str], ch
     if let Func{ ref decl, .. } = *expr {
         assert_eq!(expected_name, decl.name);
 
-        if expected_name.len() != decl.name.len() {
+        if expected_args.len() != decl.args.len() {
             panic!("wrong arguments count, expected {}: {:?}", expected_args.len(), decl.args);
         }
         for (exp, x) in expected_args.iter().zip(&decl.args) {
@@ -107,4 +92,37 @@ pub fn check_func<F>(expr: &AST, expected_name: &str, expected_args: &[&str], ch
         panic!("Assign type expected: {:?}", expr);
     }
 }
+
+
+pub fn check_block(expr: &AST, checkers: &[Box<Fn(&AST)>]) {
+    if let Block{ ref body, .. } = *expr {
+        if body.len() != checkers.len() {
+            panic!("Wrong elements count: {} expected: {:?}", checkers.len(), expr);
+        }
+
+        for (st, ch) in body.iter().zip(checkers) {
+            ch(&st);
+        }
+    } else {
+        panic!("Block type expected: {:?}", expr);
+    }
+}
+
+
+pub fn check_call(expr: &AST, expected_name: &str, args_checkers: &[Box<Fn(&AST)>]) {
+    if let Call{ ref name, ref args, .. } = *expr {
+        assert_eq!(expected_name, name);
+
+        if args.len() != args_checkers.len() {
+            panic!("Wrong elements count: {} expected: {:?}", args_checkers.len(), expr);
+        }
+
+        for (st, ch) in args.iter().zip(args_checkers) {
+            ch(&st);
+        }
+    } else {
+        panic!("FuncCall type expected: {:?}", expr);
+    }
+}
+
 
