@@ -70,3 +70,109 @@ fn call_native_funcs() {
     assert_eq!(Val::Num(4), ctx.scope["r"]);
 }
 
+
+#[test]
+fn access_vals_from_parent() {
+    let ctx = exec(r#"
+        fn x2(val) {
+            return val * 2;
+        }
+
+        fn test(val) {
+            return x2(x2(val));
+        }
+
+        let r = test(5); // = 20
+    "#);
+
+    assert_eq!(Val::Num(20), ctx.scope["r"]);
+}
+
+
+#[test]
+fn store_vals_by_ref() {
+    let ctx = exec(r#"
+        let x = 5;
+
+        fn test() {
+            return x * 5;
+        }
+
+        x = 10;
+        let r = test(); // = 50
+    "#);
+
+    assert_eq!(Val::Num(50), ctx.scope["r"]);
+}
+
+
+#[test]
+fn capture_vals() {
+    let ctx = exec(r#"
+        fn make_func(x) {
+            fn mul(y) {
+                return x * y;
+            }
+            return mul;
+        }
+
+        let mul_10 = make_func(10);
+        let mul_20 = make_func(20);
+
+        let x = mul_10(42); // 420
+        let y = mul_20(42); // 840
+    "#);
+
+    assert_eq!(Val::Num(420), ctx.scope["x"]);
+    assert_eq!(Val::Num(840), ctx.scope["y"]);
+}
+
+
+#[test]
+fn capture_vals_dynamic() {
+    let ctx = exec(r#"
+        let x = 5;
+
+        fn foo() {
+            let y = x;  // wow!
+            let x = 10;
+            return x * y;
+        }
+
+        let r = foo();
+    "#);
+
+    assert_eq!(Val::Num(50), ctx.scope["r"]);
+}
+
+
+/*
+#[test]
+fn hello_world() {
+    let mut ctx = ExecContext::new();
+    let mut out = String::new();
+
+    ctx.decl_func("println", |args| {
+        for val in args {
+            out.push_str(val.as_str().unwrap());
+        }
+
+        Val::None
+    });
+    
+    exec_with(&mut ctx, r#"
+        fn main() {
+            println("Hello world!");
+        }
+    "#);
+
+    ctx.exec_func("main", vec![])
+        .expect("'main' method should not fail");
+
+    assert_eq!("Hello world!", out);
+}
+*/
+
+
+// TODO: nested methods may fail! (e.g.: input args validation)
+// TODO: standard library

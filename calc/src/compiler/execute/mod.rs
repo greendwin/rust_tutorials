@@ -16,7 +16,7 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
         }
 
         Func{ ref decl, .. } => {
-            if ctx.scope.contains_key(&decl.name) {
+            if ctx.has_var(&decl.name) {
                 return expr.error(format!("'{}': redefinition", &decl.name)).into();
             }
 
@@ -26,7 +26,7 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
         DeclVar{ ref name, ref init, .. } => {
             let init = execute(ctx, init)?;
 
-            if ctx.scope.contains_key(name) {
+            if ctx.has_var(name) {
                 return expr.error(format!("'{}': redefinition", name)).into();
             }
 
@@ -36,7 +36,7 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
         Assign{ ref name, ref init, .. } => {
             let init = execute(ctx, init)?;
 
-            if !ctx.scope.contains_key(name) {
+            if !ctx.has_var(name) {
                 return expr.error(format!("'{}': undeclared variable", name)).into();
             }
 
@@ -61,11 +61,11 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
         }
 
         Var{ ref name, .. } => {
-            if !ctx.scope.contains_key(name) {
-                return expr.error(format!("'{}': undeclared variable", name)).into();
+            if let Some(val) = ctx.lookup_name(name) {
+                return Ok(val.clone());
             }
 
-            return Ok(ctx.scope[name].clone());
+            return expr.error(format!("'{}': undeclared variable", name)).into();
         }
 
         Call{ ref name, ref args, ref loc, .. } => {
@@ -111,11 +111,11 @@ fn exec_numeric_op(op: char, left: Val, right: Val) -> ExecResult {
 
 
 fn exec_func_call(ctx: &mut ExecContext, loc: &Loc, name: &String, args: Vec<Val>) -> ExecResult {
-    if !ctx.scope.contains_key(name) {
-        return loc.error(format!("'{}': undeclared function name", name)).into();
-    }
+    let func_val = match ctx.lookup_name(name) {
+        Some(val) => val,
+        None => return loc.error(format!("'{}': undeclared function name", name)).into(),
+    };
 
-    let func_val = &ctx.scope[name];
     match *func_val {
         Val::Func(ref decl) => {
             let mut ctx = ctx.new_nested(); // override it with nested context

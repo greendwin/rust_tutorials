@@ -6,13 +6,13 @@ use compiler::*;
 pub fn exec_with(ctx: &mut ExecContext, text: &str) {
     let prog = compiler::parse(text, "<test>")
         .map_err(|err| {
-            panic!("parse should not fail: {}", err.description);
+            panic!("parse should not fail: {}", err);
         })
         .unwrap();
 
     compiler::execute(ctx, &prog)
         .map_err(|err| {
-            panic!("execution should not fail: {}", err.to_error().description);
+            panic!("execution should not fail: {}", err.to_error());
         })
         .unwrap();
 }
@@ -30,7 +30,7 @@ pub fn exec(text: &str) -> ExecContext {
 pub fn expect_error(text: &str, expected_words: &str) {
     let prog = compiler::parse(text, "<test>")
         .map_err(|err| {
-            panic!("parse should not fail: {}", err.description);
+            panic!("parse should not fail: {}", err);
         })
         .unwrap();
 
@@ -59,7 +59,7 @@ pub fn expect_error(text: &str, expected_words: &str) {
 fn empty_program() {
     let ctx = exec("");
 
-    assert!(ctx.scope.is_empty());
+    assert!(ctx.scope.vals.is_empty());
 }
 
 
