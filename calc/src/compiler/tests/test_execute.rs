@@ -5,12 +5,16 @@ use compiler::*;
 
 pub fn exec_with(ctx: &mut ExecContext, text: &str) {
     let prog = compiler::parse(text, "<test>")
-        .expect("parse should not fail");
+        .map_err(|err| {
+            panic!("parse should not fail: {}", err.description);
+        })
+        .unwrap();
 
     compiler::execute(ctx, &prog)
         .map_err(|err| {
-            panic!("execution should not fail: {}", err.description);
-        }).unwrap();
+            panic!("execution should not fail: {}", err.to_error().description);
+        })
+        .unwrap();
 }
 
 
@@ -25,7 +29,10 @@ pub fn exec(text: &str) -> ExecContext {
 
 pub fn expect_error(text: &str, expected_words: &str) {
     let prog = compiler::parse(text, "<test>")
-        .expect("parse should not fail");
+        .map_err(|err| {
+            panic!("parse should not fail: {}", err.description);
+        })
+        .unwrap();
 
     let mut ctx = ExecContext::new();
     let r = compiler::execute(&mut ctx, &prog);
@@ -35,6 +42,7 @@ pub fn expect_error(text: &str, expected_words: &str) {
             panic!("program was expected to fail");
         }
         Err(e) => {
+            let e = e.to_error();
             let description = e.description.to_lowercase();
 
             for word in expected_words.split(" ") {

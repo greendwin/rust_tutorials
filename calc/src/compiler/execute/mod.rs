@@ -1,5 +1,6 @@
 
 pub mod context;
+pub mod result;
 
 use std::rc::Rc;
 use compiler::*;
@@ -16,7 +17,7 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
 
         Func{ ref decl, .. } => {
             if ctx.scope.contains_key(&decl.name) {
-                return expr.error(format!("'{}': redefinition", &decl.name));
+                return expr.error(format!("'{}': redefinition", &decl.name)).into();
             }
 
             ctx.set_var(&decl.name, Val::Func(Rc::clone(decl)));
@@ -26,7 +27,7 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
             let init = execute(ctx, init)?;
 
             if ctx.scope.contains_key(name) {
-                return expr.error(format!("'{}': redefinition", name));
+                return expr.error(format!("'{}': redefinition", name)).into();
             }
 
             ctx.set_var(name, init);
@@ -36,7 +37,7 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
             let init = execute(ctx, init)?;
 
             if !ctx.scope.contains_key(name) {
-                return expr.error(format!("'{}': undeclared variable", name));
+                return expr.error(format!("'{}': undeclared variable", name)).into();
             }
 
             ctx.set_var(name, init);
@@ -52,7 +53,7 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
 
             return expr.error(format!(
                 "'{}': type mismatch, numbers expected (found: '{}' and '{}')",
-                op, left, right));
+                op, left, right)).into();
         }
 
         Num{ val, .. } => {
@@ -61,7 +62,7 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
 
         Var{ ref name, .. } => {
             if !ctx.scope.contains_key(name) {
-                return expr.error(format!("'{}': undeclared variable", name));
+                return expr.error(format!("'{}': undeclared variable", name)).into();
             }
 
             return Ok(ctx.scope[name].clone());
@@ -76,8 +77,14 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
             return exec_func_call(ctx, loc, name, values);
         }
 
-        _ => {
-            return expr.error(format!("not implemented: {:#?}", expr));
+        Return{ ref ret, .. } => {
+            let ret = execute(ctx, ret)?;
+
+            if !ctx.allow_return {
+                return expr.error(format!("unexpected 'return' statement")).into();
+            }
+
+            return Err(FlowExc::Return(ret));
         }
     }
 
@@ -105,22 +112,45 @@ fn exec_numeric_op(op: char, left: Val, right: Val) -> ExecResult {
 
 fn exec_func_call(ctx: &mut ExecContext, loc: &Loc, name: &String, args: Vec<Val>) -> ExecResult {
     if !ctx.scope.contains_key(name) {
-        return loc.error(format!("'{}': undeclared function name", name));
+        return loc.error(format!("'{}': undeclared function name", name)).into();
     }
 
     let func_val = &ctx.scope[name];
-    if let Val::Func(ref decl) = *func_val {
-        let mut ctx = ctx.new_nested(); // override it with nested context
+    match *func_val {
+        Val::Func(ref decl) => {
+            let mut ctx = ctx.new_nested(); // override it with nested context
 
-        for (arg_name, arg_val) in decl.args.iter().zip(args) {
-            ctx.set_var(arg_name, arg_val);
+            // allow return in nested context
+            ctx.allow_return = true;
+
+            if decl.args.len() != args.len() {
+                return loc.error(
+                    format!("wrong arguments count, expected {} args",
+                            decl.args.len())).into();
+            }
+
+            for (arg_name, arg_val) in decl.args.iter().zip(args) {
+                ctx.set_var(arg_name, arg_val);
+            }
+
+            let r = execute(&mut ctx, &decl.body);
+
+            return match r {
+                Err(FlowExc::Return(val)) => Ok(val),
+                _ => r,
+            };
         }
 
-        execute(&mut ctx, &decl.body)
-    } else {
-        loc.error(format!(
-            "'{}': type mismatch, function expected: {}",
-            name, func_val))
+        Val::NativeFunc(ref decl) => {
+            let r = (decl.callback)(args);
+            return Ok(r);
+        }
+
+        _ => {
+            loc.error(format!(
+                "'{}': type mismatch, function expected, found '{}'",
+                name, func_val)).into()
+        }
     }
 }
 

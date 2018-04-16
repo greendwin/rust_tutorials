@@ -27,6 +27,14 @@ fn call_func() {
 
 
 #[test]
+fn unexpected_return() {
+    expect_error(r#"
+        return 42;
+    "#, "unexpected return statement");
+}
+
+
+#[test]
 fn call_func_with_args() {
     let ctx = exec(r#"
         fn add(a, b) {
@@ -40,5 +48,25 @@ fn call_func_with_args() {
 }
 
 
-// TODO: misplaced: return, break, continue
-// TODO: nested scopes
+#[test]
+fn wrong_args_count() {
+    expect_error(r#"
+        fn foo(a) {}
+        foo()
+    "#, "wrong arguments count");
+}
+
+
+#[test]
+fn call_native_funcs() {
+    let mut ctx = ExecContext::new();
+
+    ctx.decl_func("two", |_args| Val::Num(2));
+
+    exec_with(&mut ctx, r#"
+        let r = 2 * two();
+    "#);
+
+    assert_eq!(Val::Num(4), ctx.scope["r"]);
+}
+

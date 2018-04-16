@@ -145,7 +145,7 @@ pub fn tokenize<'a>(text: &'a str, filename: &str) -> TokenizeResult<'a> {
             }
 
             _ => {
-                return ctx.error(format!("'{}': unexpected symbol", ch));
+                return ctx.error(format!("'{}': unexpected symbol", ch)).into();
             }
         }
     }

@@ -27,7 +27,9 @@ pub use self::error::Error;
 
 pub type TokenizeResult<'a> = Result<Vec<Token<'a>>, Error>;
 pub type ParseResult = Result<AST, Error>;
-pub type ExecResult = Result<Val, Error>;
+
+pub use self::execute::result::FlowExc;
+pub use self::execute::result::ExecResult;
 
 
 pub fn parse_expr(text: &str, filename: &str) -> ParseResult {

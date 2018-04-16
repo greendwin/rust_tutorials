@@ -22,18 +22,18 @@ impl Loc {
 pub trait Location {
 	fn loc(&self) -> &Loc;
 
-    fn error<T>(&self, description: String) -> Result<T, Error> {
-        Err(Error {
+    fn error(&self, description: String) -> Error {
+        Error {
             description: description,
             loc: self.loc().clone(),
-        })
+        }
     }
 
-    fn error_str<T>(&self, description: &str) -> Result<T, Error> {
-        Err(Error {
+    fn error_str(&self, description: &str) -> Error {
+        Error {
             description: String::from(description),
             loc: self.loc().clone(),
-        })
+        }
     }
 }
 
@@ -41,5 +41,12 @@ pub trait Location {
 impl Location for Loc {
     fn loc(&self) -> &Loc {
         self
+    }
+}
+
+
+impl<T> Into<Result<T, Error>> for Error {
+    fn into(self) -> Result<T, Error> {
+        Err(self)
     }
 }

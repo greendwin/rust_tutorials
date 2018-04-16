@@ -13,7 +13,13 @@ pub fn parse_block(ctx: &mut ParseContext) -> ParseResult {
             "let"    => parse_st_let(ctx)?,
             "return" => parse_st_return(ctx)?,
             "fn"     => parse_st_fn(ctx)?,
-            _        => parse_st_assign(ctx)?,
+            _        => {
+                if ctx.get_next().is_symbol('=') {
+                    parse_st_assign(ctx)?
+                } else {
+                    parse_expr(ctx)?
+                }
+            }
         };
 
         body.push(st);

@@ -35,9 +35,9 @@ impl<'a> ParseContext<'a> {
 
     pub fn error_unexpected_token<T>(&self) -> Result<T, Error> {
         if let Token::Eof(_) = *self.token() {
-		    self.error_str("unexpected end of file")
+		    self.error_str("unexpected end of file").into()
         } else {
-    		self.error(format!("'{}': unexpected token", self.token()))
+    		self.error(format!("'{}': unexpected token", self.token())).into()
         }
 	}
 
@@ -57,7 +57,7 @@ impl<'a> ParseContext<'a> {
 			return Ok(());
 		} 
 
-		self.error(format!("'{}': unexpected token, expected symbol '{}'", self.token(), expected))
+		self.error(format!("'{}': unexpected token, expected symbol '{}'", self.token(), expected)).into()
 	}
 
     pub fn match_ident(&mut self) -> MatchResult<'a, (Loc, &'a str)> {
@@ -67,7 +67,7 @@ impl<'a> ParseContext<'a> {
 
             Ok((loc, name))
         } else {
-		    self.error(format!("'{}': identifier expected", self.token()))
+		    self.error(format!("'{}': identifier expected", self.token())).into()
         }
     }
 
@@ -81,7 +81,7 @@ impl<'a> ParseContext<'a> {
             }
         }
         
-        self.error(format!("'{}': expected keyword '{}'", self.token(), expected))
+        self.error(format!("'{}': expected keyword '{}'", self.token(), expected)).into()
     }
 
 	pub fn match_any(&mut self) -> Loc {
