@@ -4,6 +4,7 @@ mod error;
 mod token;
 mod ast;
 mod value;
+mod scope;
 
 mod tokenizer;
 mod parser;
@@ -18,6 +19,8 @@ pub use self::location::Location;
 pub use self::token::Token;
 pub use self::ast::AST;
 pub use self::ast::FuncDecl;
+
+pub use self::scope::Scope;
 pub use self::value::Val;
 
 pub use self::parser::context::ParseContext;

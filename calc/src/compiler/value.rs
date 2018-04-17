@@ -3,20 +3,23 @@ use std::fmt;
 use compiler::*;
 
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum Val {
+    None,
+    Num(i32),
+    Func{
+        decl: Rc<FuncDecl>,
+        scope: Rc<Scope>,
+    },
+    NativeFunc(Rc<NativeFuncDecl>),
+}
+
+
 pub type CallbackType = Fn(Vec<Val>) -> Val;
 
 pub struct NativeFuncDecl {
     pub name: String,
     pub callback: Box<CallbackType>,
-}
-
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum Val {
-    None,
-    Num(i32),
-    Func(Rc<FuncDecl>),
-    NativeFunc(Rc<NativeFuncDecl>),
 }
 
 
@@ -54,6 +57,18 @@ impl Val {
 }
 
 
+impl fmt::Display for Val {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Val::None => write!(f, "None"),
+            Val::Num(val) => write!(f, "{}", val),
+            Val::Func{ref decl, ..} => write!(f, "fn {}", decl.name),
+            Val::NativeFunc(ref decl) => write!(f, "native fn {}", decl.name),
+        }
+    }
+}
+
+
 impl fmt::Debug for NativeFuncDecl {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, r#"Val::NativeFunc("{}", ..)"#, self.name)
@@ -68,14 +83,3 @@ impl PartialEq for NativeFuncDecl {
     }
 }
 
-
-impl fmt::Display for Val {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Val::None => write!(f, "None"),
-            Val::Num(val) => write!(f, "{}", val),
-            Val::Func(ref decl) => write!(f, "fn {}", decl.name),
-            Val::NativeFunc(ref decl) => write!(f, "native fn {}", decl.name),
-        }
-    }
-}

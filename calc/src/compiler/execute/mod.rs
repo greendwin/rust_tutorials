@@ -20,7 +20,12 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
                 return expr.error(format!("'{}': redefinition", &decl.name)).into();
             }
 
-            ctx.set_var(&decl.name, Val::Func(Rc::clone(decl)));
+            let scope = Scope::new_nested(&ctx.scope);
+
+            ctx.set_var(&decl.name, Val::Func{
+                decl: Rc::clone(decl),
+                scope,
+            });
         }
 
         DeclVar{ ref name, ref init, .. } => {
@@ -116,9 +121,9 @@ fn exec_func_call(ctx: &mut ExecContext, loc: &Loc, name: &String, args: Vec<Val
         None => return loc.error(format!("'{}': undeclared function name", name)).into(),
     };
 
-    match *func_val {
-        Val::Func(ref decl) => {
-            let mut ctx = ctx.new_nested(); // override it with nested context
+    match func_val {
+        Val::Func{ ref decl, ref scope } => {
+            let mut ctx = ctx.new_with(scope); // override it with nested context
 
             // allow return in nested context
             ctx.allow_return = true;

@@ -59,7 +59,7 @@ pub fn expect_error(text: &str, expected_words: &str) {
 fn empty_program() {
     let ctx = exec("");
 
-    assert!(ctx.scope.vals.is_empty());
+    assert!(ctx.scope.is_empty());
 }
 
 
@@ -69,7 +69,7 @@ fn decl_var() {
         let x = 42;
     "#);
 
-    assert_eq!(Val::Num(42), ctx.scope["x"]);
+    assert_eq!(Val::Num(42), ctx.scope.get_val("x"));
 }
 
 
@@ -91,7 +91,7 @@ fn assign_val() {
         x = 42;
     "#);
 
-    assert_eq!(Val::Num(42), ctx.scope["x"]);
+    assert_eq!(Val::Num(42), ctx.scope.get_val("x"));
 }
 
 
@@ -110,7 +110,7 @@ fn read_variable() {
         let b = a;
     "#);
 
-    assert_eq!(Val::Num(42), ctx.scope["b"]);
+    assert_eq!(Val::Num(42), ctx.scope.get_val("b"));
 }
 
 
@@ -129,8 +129,8 @@ fn add_sub() {
         let y = x - 8;  // = -1
     "#);
 
-    assert_eq!(Val::Num(7), ctx.scope["x"]);
-    assert_eq!(Val::Num(-1), ctx.scope["y"]);
+    assert_eq!(Val::Num(7), ctx.scope.get_val("x"));
+    assert_eq!(Val::Num(-1), ctx.scope.get_val("y"));
 }
 
 
@@ -142,9 +142,9 @@ fn mul_div_mod() {
         let z = x % 4;  // 2
     "#);
 
-    assert_eq!(Val::Num(10), ctx.scope["x"]);
-    assert_eq!(Val::Num(3), ctx.scope["y"]);
-    assert_eq!(Val::Num(2), ctx.scope["z"]);
+    assert_eq!(Val::Num(10), ctx.scope.get_val("x"));
+    assert_eq!(Val::Num(3), ctx.scope.get_val("y"));
+    assert_eq!(Val::Num(2), ctx.scope.get_val("z"));
 }
 
 

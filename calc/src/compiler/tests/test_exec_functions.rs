@@ -8,7 +8,7 @@ fn decl_func() {
         fn test() {}
     "#);
 
-    assert!(ctx.scope["test"].is_func());
+    assert!(ctx.scope.get_val("test").is_func());
 }
 
 
@@ -22,7 +22,7 @@ fn call_func() {
         let x = test();
     "#);
 
-    assert_eq!(Val::Num(42), ctx.scope["x"]);
+    assert_eq!(Val::Num(42), ctx.scope.get_val("x"));
 }
 
 
@@ -44,7 +44,7 @@ fn call_func_with_args() {
         let x = add(2, 3);
     "#);
 
-    assert_eq!(Val::Num(5), ctx.scope["x"]);
+    assert_eq!(Val::Num(5), ctx.scope.get_val("x"));
 }
 
 
@@ -67,7 +67,7 @@ fn call_native_funcs() {
         let r = 2 * two();
     "#);
 
-    assert_eq!(Val::Num(4), ctx.scope["r"]);
+    assert_eq!(Val::Num(4), ctx.scope.get_val("r"));
 }
 
 
@@ -85,7 +85,7 @@ fn access_vals_from_parent() {
         let r = test(5); // = 20
     "#);
 
-    assert_eq!(Val::Num(20), ctx.scope["r"]);
+    assert_eq!(Val::Num(20), ctx.scope.get_val("r"));
 }
 
 
@@ -102,7 +102,7 @@ fn store_vals_by_ref() {
         let r = test(); // = 50
     "#);
 
-    assert_eq!(Val::Num(50), ctx.scope["r"]);
+    assert_eq!(Val::Num(50), ctx.scope.get_val("r"));
 }
 
 
@@ -123,8 +123,8 @@ fn capture_vals() {
         let y = mul_20(42); // 840
     "#);
 
-    assert_eq!(Val::Num(420), ctx.scope["x"]);
-    assert_eq!(Val::Num(840), ctx.scope["y"]);
+    assert_eq!(Val::Num(420), ctx.scope.get_val("x"));
+    assert_eq!(Val::Num(840), ctx.scope.get_val("y"));
 }
 
 
@@ -142,7 +142,7 @@ fn capture_vals_dynamic() {
         let r = foo();
     "#);
 
-    assert_eq!(Val::Num(50), ctx.scope["r"]);
+    assert_eq!(Val::Num(50), ctx.scope.get_val("r"));
 }
 
 
