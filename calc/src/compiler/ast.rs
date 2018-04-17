@@ -38,6 +38,11 @@ pub enum AST {
         val: i32,
     },
 
+    Str {
+        loc: Loc,
+        val: String,
+    },
+
     Var {
         loc: Loc,
         name: String,
@@ -77,6 +82,7 @@ impl Location for AST {
             Return  { ref loc, .. } => loc,
             Func    { ref loc, .. } => loc,
             Num     { ref loc, .. } => loc,
+            Str     { ref loc, .. } => loc,
             Var     { ref loc, .. } => loc,
             Call    { ref loc, .. } => loc,
             BinOp   { ref loc, .. } => loc,

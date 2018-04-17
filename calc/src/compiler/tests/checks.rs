@@ -6,7 +6,7 @@ pub fn check_var(expr: &AST, expected: &str) {
 	if let Var{ ref name, .. } = *expr {
 		assert_eq!(expected, name);
 	} else {
-		panic!("Var type expected: {:?}", expr);
+		panic!("Var type expected: {:#?}", expr);
 	}
 }
 
@@ -15,7 +15,16 @@ pub fn check_num(expr: &AST, expected: i32) {
 	if let Num{ val, .. } = *expr {
 		assert_eq!(expected, val);
 	} else {
-		panic!("Num type expected: {:?}", expr);
+		panic!("Num type expected: {:#?}", expr);
+	}
+}
+
+
+pub fn check_str(expr: &AST, expected: &str) {
+	if let Str{ ref val, .. } = *expr {
+		assert_eq!(expected, val);
+	} else {
+		panic!("Str type expected: {:#?}", expr);
 	}
 }
 
@@ -32,7 +41,7 @@ pub fn check_op<F1, F2>(
 		left(l);
 		right(r);
 	} else {
-		panic!("BinOp type expected: {:?}", expr);
+		panic!("BinOp type expected: {:#?}", expr);
 	}
 }
 
@@ -45,7 +54,7 @@ pub fn check_let<F>(expr: &AST, expected_name: &str, check: F)
 
         check(init);
     } else {
-        panic!("Assign type expected: {:?}", expr);
+        panic!("Assign type expected: {:#?}", expr);
     }
 }
 
@@ -58,7 +67,7 @@ pub fn check_assign<F>(expr: &AST, expected_name: &str, check: F)
 
         check(init);
     } else {
-        panic!("Assign type expected: {:?}", expr);
+        panic!("Assign type expected: {:#?}", expr);
     }
 }
 
@@ -69,7 +78,7 @@ pub fn check_return<F>(expr: &AST, check: F)
     if let Return{ ref ret, .. } = *expr {
         check(ret);
     } else {
-        panic!("Return type expected: {:?}", expr);
+        panic!("Return type expected: {:#?}", expr);
     }
 }
 
@@ -81,7 +90,7 @@ pub fn check_func<F>(expr: &AST, expected_name: &str, expected_args: &[&str], ch
         assert_eq!(expected_name, decl.name);
 
         if expected_args.len() != decl.args.len() {
-            panic!("wrong arguments count, expected {}: {:?}", expected_args.len(), decl.args);
+            panic!("wrong arguments count, expected {}: {:#?}", expected_args.len(), decl.args);
         }
         for (exp, x) in expected_args.iter().zip(&decl.args) {
             assert_eq!(*exp, x);
@@ -89,7 +98,7 @@ pub fn check_func<F>(expr: &AST, expected_name: &str, expected_args: &[&str], ch
 
         check_body(&decl.body);
     } else {
-        panic!("Assign type expected: {:?}", expr);
+        panic!("Assign type expected: {:#?}", expr);
     }
 }
 
@@ -97,14 +106,14 @@ pub fn check_func<F>(expr: &AST, expected_name: &str, expected_args: &[&str], ch
 pub fn check_block(expr: &AST, checkers: &[Box<Fn(&AST)>]) {
     if let Block{ ref body, .. } = *expr {
         if body.len() != checkers.len() {
-            panic!("Wrong elements count: {} expected: {:?}", checkers.len(), expr);
+            panic!("Wrong elements count: {} expected: {:#?}", checkers.len(), expr);
         }
 
         for (st, ch) in body.iter().zip(checkers) {
             ch(&st);
         }
     } else {
-        panic!("Block type expected: {:?}", expr);
+        panic!("Block type expected: {:#?}", expr);
     }
 }
 
@@ -114,14 +123,14 @@ pub fn check_call(expr: &AST, expected_name: &str, args_checkers: &[Box<Fn(&AST)
         assert_eq!(expected_name, name);
 
         if args.len() != args_checkers.len() {
-            panic!("Wrong elements count: {} expected: {:?}", args_checkers.len(), expr);
+            panic!("Wrong elements count: {} expected: {:#?}", args_checkers.len(), expr);
         }
 
         for (st, ch) in args.iter().zip(args_checkers) {
             ch(&st);
         }
     } else {
-        panic!("FuncCall type expected: {:?}", expr);
+        panic!("FuncCall type expected: {:#?}", expr);
     }
 }
 

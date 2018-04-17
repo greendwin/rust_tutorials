@@ -13,7 +13,9 @@ fn loc(line: i32) -> Loc {
 
 fn tokenize(text: &str) -> Vec<Token> {
     tokenizer::tokenize(text, FILENAME)
-        .expect("text should compile")
+        .map_err(|err| {
+            panic!("text should compile: {}", err);
+        }).unwrap()
 }
 
 
@@ -86,3 +88,37 @@ fn skip_comments() {
     assert_eq!(expected, tkn);
 }
 
+
+#[test]
+fn string_literals() {
+    let symbols = r#" "val" "#;
+    let tkn = tokenize(symbols);
+
+    let expected = vec![
+        Str(loc(1), r#""val""#),
+        Eof(loc(1)),
+    ];
+
+    assert_eq!(expected, tkn);
+}
+
+
+#[test]
+fn string_literals_escape() {
+    let symbols = r#" "\\val\"\n" "#;
+    let tkn = tokenize(symbols);
+
+    let expected = vec![
+        Str(loc(1), r#""\\val\"\n""#),
+        Eof(loc(1)),
+    ];
+
+    assert_eq!(expected, tkn);
+}
+
+
+// TODO: expect error:
+// * eoln in string literal
+// * unknown escape symbol (anything except \t\n\\ & \"
+//
+// TODO: convert to normal string on AST node creation

@@ -7,6 +7,7 @@ use compiler::*;
 pub enum Val {
     None,
     Num(i32),
+    Str(Rc<String>),
     Func{
         decl: Rc<FuncDecl>,
         scope: Rc<Scope>,
@@ -45,6 +46,13 @@ impl Val {
         }
     }
 
+    pub fn as_str(&self) -> Option<&String> {
+        match *self {
+            Val::Str(ref val) => Some(val),
+            _ => None,
+        }
+    }
+
     pub fn new_func<T>(name: &str, callback: T) -> Val 
         where T: Fn(Vec<Val>) -> Val + 'static
     {
@@ -62,6 +70,7 @@ impl fmt::Display for Val {
         match *self {
             Val::None => write!(f, "None"),
             Val::Num(val) => write!(f, "{}", val),
+            Val::Str(ref val) => write!(f, r#""{}""#, val),
             Val::Func{ref decl, ..} => write!(f, "fn {}", decl.name),
             Val::NativeFunc(ref decl) => write!(f, "native fn {}", decl.name),
         }

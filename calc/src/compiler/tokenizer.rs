@@ -73,6 +73,38 @@ fn parse_int<'a>(ctx: &mut TokenizeContext<'a>) -> Token<'a> {
 }
 
 
+fn parse_literal<'a>(ctx: &mut TokenizeContext<'a>) -> Token<'a> {
+    let loc = ctx.loc.clone();
+    let r = ctx.cur_text;
+
+    let mut len = 1;
+    ctx.next();
+
+    while let Some(ch) = ctx.cur {
+        if ch == '\\' {
+            // process next char unconditionally
+            len += 2;
+            ctx.next();
+            ctx.next();
+
+            // TODO: this code may fail when literal brakes by EOF
+            continue;
+        }
+
+        // include last char to the output
+        len += 1;
+        ctx.next();
+
+        if ch == '"' {
+            break;
+        }
+
+    }
+
+    Str(loc, &r[..len])
+}
+
+
 fn is_word_start(ch: char) -> bool {
     ch.is_alphabetic() || ch == '_'
 }
@@ -114,6 +146,11 @@ pub fn tokenize<'a>(text: &'a str, filename: &str) -> TokenizeResult<'a> {
 
         if ch.is_digit(10) {
             r.push(parse_int(&mut ctx));
+            continue;
+        }
+
+        if ch == '"' {
+            r.push(parse_literal(&mut ctx));
             continue;
         }
 

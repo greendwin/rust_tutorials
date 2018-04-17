@@ -5,7 +5,9 @@ use super::checks::*;
 
 fn parse_expr(text: &str) -> AST {
 	compiler::parse_expr(text, "<test>")
-		.expect("parse_expr should not fail")
+        .map_err(|err| {
+		    panic!("parse_expr should not fail: {}", err);
+        }).unwrap()
 }
 
 
@@ -123,6 +125,22 @@ fn call_func_with_args() {
             |l| check_var(l, "x"),
             |r| check_var(r, "y"))),
     ]);
+}
+
+
+#[test]
+fn string_literal() {
+    let expr = parse_expr(r#" "val" "#);
+
+    check_str(&expr, "val");
+}
+
+
+#[test]
+fn string_literal_escape() {
+    let expr = parse_expr(r#" "\\\n\t\"" "#);
+
+    check_str(&expr, "\\\n\t\"");
 }
 
 

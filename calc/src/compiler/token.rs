@@ -6,6 +6,7 @@ use super::location::*;
 pub enum Token<'a> {
     Symbol(Loc, char),
     Int(Loc, i32),
+    Str(Loc, &'a str),
     Ident(Loc, &'a str),
     Eof(Loc),
 }
@@ -28,6 +29,7 @@ impl<'a> Location for Token<'a> {
 		match *self {
 			Symbol(ref loc, _) => loc,
 			Int(ref loc, _) => loc,
+			Str(ref loc, _) => loc,
 			Ident(ref loc, _) => loc,
 			Eof(ref loc) => loc,
 		}
@@ -42,6 +44,7 @@ impl<'a> Display for Token<'a> {
 		match *self {
 			Symbol(_, ch) => write!(f, "{}", ch),
 			Int(_, val) => write!(f, "{}", val),
+			Str(_, val) => write!(f, "{}", val),
 			Ident(_, name) => write!(f, "{}", name),
 			Eof(_) => write!(f, "<EOF>"),
 		}

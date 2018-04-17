@@ -65,6 +65,10 @@ pub fn execute(ctx: &mut ExecContext, expr: &AST) -> ExecResult {
             return Ok(Val::Num(val));
         }
 
+        Str{ ref val, .. } => {
+            return Ok(Val::Str(Rc::new(val.clone())));
+        }
+
         Var{ ref name, .. } => {
             if let Some(val) = ctx.lookup_name(name) {
                 return Ok(val.clone());
@@ -115,7 +119,7 @@ fn exec_numeric_op(op: char, left: Val, right: Val) -> ExecResult {
 }
 
 
-fn exec_func_call(ctx: &mut ExecContext, loc: &Loc, name: &String, args: Vec<Val>) -> ExecResult {
+pub fn exec_func_call(ctx: &mut ExecContext, loc: &Loc, name: &str, args: Vec<Val>) -> ExecResult {
     let func_val = match ctx.lookup_name(name) {
         Some(val) => val,
         None => return loc.error(format!("'{}': undeclared function name", name)).into(),

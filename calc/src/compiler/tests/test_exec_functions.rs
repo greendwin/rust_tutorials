@@ -1,3 +1,5 @@
+use std::rc::Rc;
+use std::cell::RefCell;
 use compiler::*;
 use super::test_execute::*;
 
@@ -52,7 +54,7 @@ fn call_func_with_args() {
 fn wrong_args_count() {
     expect_error(r#"
         fn foo(a) {}
-        foo()
+        foo();
     "#, "wrong arguments count");
 }
 
@@ -146,15 +148,15 @@ fn capture_vals_dynamic() {
 }
 
 
-/*
 #[test]
 fn hello_world() {
     let mut ctx = ExecContext::new();
-    let mut out = String::new();
+    let out = Rc::new(RefCell::new(String::new()));
 
-    ctx.decl_func("println", |args| {
+    let out_cl = Rc::clone(&out);
+    ctx.decl_func("println", move |args| {
         for val in args {
-            out.push_str(val.as_str().unwrap());
+            out_cl.borrow_mut().push_str(val.as_str().unwrap());
         }
 
         Val::None
@@ -166,12 +168,11 @@ fn hello_world() {
         }
     "#);
 
-    ctx.exec_func("main", vec![])
+    ctx.exec_func("main", Vec::new())
         .expect("'main' method should not fail");
 
-    assert_eq!("Hello world!", out);
+    assert_eq!("Hello world!", *out.borrow());
 }
-*/
 
 
 // TODO: nested methods may fail! (e.g.: input args validation)

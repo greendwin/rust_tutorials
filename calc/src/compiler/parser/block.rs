@@ -17,7 +17,9 @@ pub fn parse_block(ctx: &mut ParseContext) -> ParseResult {
                 if ctx.get_next().is_symbol('=') {
                     parse_st_assign(ctx)?
                 } else {
-                    parse_expr(ctx)?
+                    let r = parse_expr(ctx)?;
+                    ctx.match_symbol(';')?;
+                    r
                 }
             }
         };

@@ -1,5 +1,6 @@
 use std::rc::Rc;
 use compiler::*;
+use super::exec_func_call;
 
 
 pub struct ExecContext {
@@ -51,6 +52,13 @@ impl ExecContext {
         where T: Fn(Vec<Val>) -> Val + 'static
     {
         self.set_var(name, Val::new_func(name, func));
+    }
+
+    pub fn exec_func(&mut self, name: &str, args: Vec<Val>) -> ExecResult {
+        exec_func_call(
+            self,
+            &Loc::new(&format!(r#"<exec_func("{}")>"#, name), 0),
+            name, args)
     }
 }
 
