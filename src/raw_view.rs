@@ -25,3 +25,5 @@ where
         unsafe { slice::from_raw_parts(self.as_ptr() as *const u8, item_size * self.len()) }
     }
 }
+
+unsafe impl RawStruct for u8 {}

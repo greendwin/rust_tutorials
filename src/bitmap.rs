@@ -1,6 +1,6 @@
 use std::fs::File;
-use std::io;
 use std::io::prelude::*;
+use std::io::{self, BufWriter};
 use std::mem;
 use std::path::Path;
 
@@ -8,10 +8,11 @@ use crate::math::lerp;
 use crate::raw_view::{RawStruct, RawView};
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Copy, Clone, Debug)]
+#[repr(C, packed)]
 pub struct Color {
-    pub r: u8,
-    pub g: u8,
     pub b: u8,
+    pub g: u8,
+    pub r: u8,
 }
 
 unsafe impl RawStruct for Color {}
@@ -75,7 +76,7 @@ pub struct Bitmap {
     data: Box<[Color]>,
 }
 
-#[repr(C)]
+#[repr(C, packed)]
 pub struct BmpFileHeader {
     pub magic: [u8; 2],
     pub size: u32,
@@ -105,7 +106,7 @@ pub fn bmp_row_size(width: usize, bpp: usize) -> usize {
     4 * ((bpp * width + 31) / 32)
 }
 
-#[repr(C)]
+#[repr(C, packed)]
 struct BitmapInfoHeader {
     struct_size: u32,
     width: i32,
@@ -127,7 +128,7 @@ impl BitmapInfoHeader {
         Self {
             struct_size: 40,
             width: width as i32,
-            height: -(height as i32),
+            height: height as i32,
             num_color_planes: 1,
             bits_per_pixel: bpp as u16, // RGB
             compression: 0,             // BI_RGB
@@ -180,7 +181,8 @@ impl Bitmap {
     }
 
     pub fn save<T: AsRef<Path>>(&self, path: T) -> io::Result<()> {
-        let mut f = File::create(path)?;
+        let f = File::create(path)?;
+        let mut f = BufWriter::new(f);
 
         let file_header = BmpFileHeader::new(self.width, self.height, 24);
         f.write(file_header.raw_view())?;
@@ -189,7 +191,7 @@ impl Bitmap {
         f.write(bmp_info.raw_view())?;
 
         let row_size = bmp_row_size(self.width, 24);
-        let padding = vec![0; row_size - self.width * 3];
+        let padding = vec![0; row_size - self.width * mem::size_of::<Color>()];
         for y in 0..self.height {
             f.write(self.data[y * self.width..(y + 1) * self.width].raw_view())?;
             f.write(&padding)?;
