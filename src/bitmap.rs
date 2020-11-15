@@ -4,9 +4,8 @@ use std::io::{self, BufWriter};
 use std::mem;
 use std::path::Path;
 
-use crate::math::lerp;
-use crate::raw_view::{RawStruct, RawView};
-use crate::vec3::Vec3;
+use crate::math::{lerp, Vec3};
+use crate::util::{RawStruct, RawView};
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Copy, Clone, Debug)]
 #[repr(C, packed)]
