@@ -2,11 +2,9 @@
 
 use std::io;
 
-use rand::prelude::*;
-use rand::thread_rng;
-
 use rust_ray::bitmap::Bitmap;
 use rust_ray::math::*;
+use rust_ray::utils::*;
 use rust_ray::world::*;
 
 fn ray_color(ray: &Ray, hittable: &impl HitRay) -> Vec3 {
@@ -47,8 +45,6 @@ fn main() -> io::Result<()> {
     let mut prev_progress = -1;
     let mut r = Bitmap::new(image_width, image_height, (0, 0, 0));
 
-    let mut rng = thread_rng();
-
     for y in 0..r.height() {
         let y_ratio = inv_lerp(y as f64, 0.0, (r.height() - 1) as f64);
 
@@ -64,8 +60,8 @@ fn main() -> io::Result<()> {
                 let x = x as f64;
                 let y = y as f64;
 
-                let u = inv_lerp(x + rng.gen_range(0.0, 1.0), 0.0, (r.width() - 1) as f64);
-                let v = inv_lerp(y + rng.gen_range(0.0, 1.0), 0.0, (r.height() - 1) as f64);
+                let u = inv_lerp(x + random(), 0.0, (r.width() - 1) as f64);
+                let v = inv_lerp(y + random(), 0.0, (r.height() - 1) as f64);
                 let ray = camera.get_ray(u, v);
                 accum_color += ray_color(&ray, &scene);
             }

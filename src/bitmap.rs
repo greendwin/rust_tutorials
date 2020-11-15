@@ -5,7 +5,7 @@ use std::mem;
 use std::path::Path;
 
 use crate::math::{lerp, Vec3};
-use crate::util::{RawStruct, RawView};
+use crate::utils::{RawStruct, RawView};
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Copy, Clone, Debug)]
 #[repr(C, packed)]

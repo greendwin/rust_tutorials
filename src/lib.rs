@@ -1,4 +1,4 @@
 pub mod bitmap;
 pub mod math;
-pub mod util;
+pub mod utils;
 pub mod world;
