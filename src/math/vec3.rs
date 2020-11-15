@@ -73,11 +73,13 @@ impl Display for Vec3 {
     }
 }
 
-impl<T> From<(T, T, T)> for Vec3
+impl<X, Y, Z> From<(X, Y, Z)> for Vec3
 where
-    T: Into<f64>,
+    X: Into<f64>,
+    Y: Into<f64>,
+    Z: Into<f64>,
 {
-    fn from(other: (T, T, T)) -> Self {
+    fn from(other: (X, Y, Z)) -> Self {
         Self::new(other.0, other.1, other.2)
     }
 }
