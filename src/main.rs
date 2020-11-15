@@ -8,10 +8,25 @@ use rust_ray::ray::Ray;
 use rust_ray::vec3::Vec3;
 
 fn ray_color(ray: &Ray) -> Vec3 {
+    if hit_sphere((0.2, 0.0, -1.0).into(), 0.3, ray) {
+        return (1, 0, 0).into();
+    }
+
     let norm_dir = ray.dir.norm();
     let t = 0.5 * (norm_dir.y + 1.0);
 
     lerp(t, Vec3::new(1, 1, 1), Vec3::new(0.5, 0.7, 1.0))
+}
+
+fn hit_sphere(center: Vec3, radius: f64, ray: &Ray) -> bool {
+    let oc = center - ray.orig;
+    let a = ray.dir.dot(ray.dir);
+    let b = 2.0 * oc.dot(ray.dir);
+    let c = oc.dot(oc) - radius * radius;
+
+    let discriminant = b * b - a * c * 4.0;
+
+    discriminant > 0.0
 }
 
 fn main() -> io::Result<()> {
