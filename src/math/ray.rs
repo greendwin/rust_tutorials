@@ -5,6 +5,16 @@ pub struct Ray {
     pub dir: Vec3,
 }
 
+pub struct Hit {
+    pub pt: Vec3,
+    pub norm: Vec3,
+    pub t: f64,
+}
+
+pub trait HitRay {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Hit>;
+}
+
 impl Ray {
     pub fn new<T: Into<Vec3>>(origin: T, direction: T) -> Self {
         Self {

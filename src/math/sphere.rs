@@ -1,4 +1,4 @@
-use super::ray::Ray;
+use super::ray::*;
 use super::vec3::Vec3;
 
 pub struct Sphere {
@@ -13,20 +13,38 @@ impl Sphere {
             radius: radius.into(),
         }
     }
+}
 
-    pub fn hit(&self, ray: &Ray) -> Option<f64> {
+impl HitRay for Sphere {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Hit> {
         let oc = ray.orig - self.center;
         let a = ray.dir.length_squared();
         let half_b = oc.dot(ray.dir);
         let c = oc.length_squared() - self.radius * self.radius;
 
         let discriminant = half_b * half_b - a * c;
-
         if discriminant < 0.0 {
-            None
-        } else {
-            // assume closest `t` is in front of camera (for now)
-            Some((-half_b - discriminant.sqrt()) / a)
+            return None;
         }
+
+        let sqrtd = discriminant.sqrt();
+        let mut t = (-half_b - sqrtd) / a;
+
+        if t < t_min || t > t_max {
+            // try second root
+            t = (-half_b + sqrtd) / a;
+
+            if t < t_min || t > t_max {
+                return None;
+            }
+        }
+
+        let pt = ray.at(t);
+        let norm = (pt - self.center) / self.radius;
+
+        // assume closest `t` is in front of camera (for now)
+        Some(Hit { pt, norm, t })
     }
 }
+
+// TODO: test me!

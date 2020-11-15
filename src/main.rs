@@ -7,9 +7,8 @@ use rust_ray::math::*;
 
 fn ray_color(ray: &Ray, spheres: &[Sphere]) -> Vec3 {
     for s in spheres {
-        if let Some(t) = s.hit(ray) {
-            let n = (ray.at(t) - s.center).norm();
-            return (n + 1.0) * 0.5;
+        if let Some(hit) = s.hit(ray, 0.0, f64::MAX) {
+            return (hit.norm + 1.0) * 0.5;
         }
     }
 
