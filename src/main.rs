@@ -2,9 +2,12 @@
 
 use std::io;
 
+use rand::prelude::*;
+use rand::thread_rng;
+
 use rust_ray::bitmap::Bitmap;
 use rust_ray::math::*;
-use rust_ray::scene::*;
+use rust_ray::world::*;
 
 fn ray_color(ray: &Ray, hittable: &impl HitRay) -> Vec3 {
     if let Some(hit) = hittable.hit(ray, 0.0, f64::MAX) {
@@ -17,37 +20,37 @@ fn ray_color(ray: &Ray, hittable: &impl HitRay) -> Vec3 {
 }
 
 fn main() -> io::Result<()> {
+    // Image
+
+    let image_width = 640;
+    let image_height = 480;
+    let aspect_ratio = image_width as f64 / image_height as f64;
+
+    #[cfg(debug_assertions)]
+    let samples_per_pixel = 4;
+
+    #[cfg(not(debug_assertions))]
+    let samples_per_pixel = 100;
+
     // Scene
 
     let mut scene = Scene::new();
     scene.add(Sphere::new((0, 0, -1), 0.5));
     scene.add(Sphere::new((0, -100.5, -1), 100));
 
-    // Image
-
-    const IMAGE_WIDTH: usize = 640;
-    const IMAGE_HEIGHT: usize = 480;
-    const ASPECT_RATIO: f64 = IMAGE_WIDTH as f64 / IMAGE_HEIGHT as f64;
-
     // Camera
 
-    const VIEWPORT_HEIGHT: f64 = 2.0;
-    const VIEWPORT_WIDTH: f64 = ASPECT_RATIO * VIEWPORT_HEIGHT;
-    const FOCAL_LENGTH: f64 = 1.0;
-
-    let origin = Vec3::new(0, 0, 0);
-    let horizontal = Vec3::new(VIEWPORT_WIDTH, 0, 0);
-    let vertical = Vec3::new(0, VIEWPORT_HEIGHT, 0);
-    let lower_left_corner =
-        origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0, 0, FOCAL_LENGTH);
+    let camera = Camera::new(aspect_ratio);
 
     // Render
 
     let mut prev_progress = -1;
-    let mut r = Bitmap::new(IMAGE_WIDTH, IMAGE_HEIGHT, (0, 0, 0));
+    let mut r = Bitmap::new(image_width, image_height, (0, 0, 0));
+
+    let mut rng = thread_rng();
 
     for y in 0..r.height() {
-        let y_ratio = inv_lerp(y as f32, 0.0, (r.height() - 1) as f32);
+        let y_ratio = inv_lerp(y as f64, 0.0, (r.height() - 1) as f64);
 
         let progress = (100.0 * y_ratio) as i32;
         if progress > prev_progress {
@@ -56,16 +59,18 @@ fn main() -> io::Result<()> {
         }
 
         for x in 0..r.width() {
-            let u = inv_lerp(x as f64, 0.0, (r.width() - 1) as f64);
-            let v = inv_lerp(y as f64, 0.0, (r.height() - 1) as f64);
+            let mut accum_color = Vec3::zero();
+            for _ in 0..samples_per_pixel {
+                let x = x as f64;
+                let y = y as f64;
 
-            let ray = Ray::new(
-                origin,
-                lower_left_corner + horizontal * u + vertical * v - origin,
-            );
+                let u = inv_lerp(x + rng.gen_range(0.0, 1.0), 0.0, (r.width() - 1) as f64);
+                let v = inv_lerp(y + rng.gen_range(0.0, 1.0), 0.0, (r.height() - 1) as f64);
+                let ray = camera.get_ray(u, v);
+                accum_color += ray_color(&ray, &scene);
+            }
 
-            let pixel_color = ray_color(&ray, &scene);
-            r.set_pixel(x, y, pixel_color);
+            r.set_pixel(x, y, accum_color / samples_per_pixel);
         }
     }
 

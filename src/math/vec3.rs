@@ -185,11 +185,13 @@ impl Mul for Vec3 {
     }
 }
 
-impl Mul<f64> for Vec3 {
+impl<T: Into<f64>> Mul<T> for Vec3 {
     type Output = Self;
 
     #[inline]
-    fn mul(self, other: f64) -> Self {
+    fn mul(self, other: T) -> Self {
+        let other = other.into();
+
         Self {
             x: self.x * other,
             y: self.y * other,
@@ -207,12 +209,12 @@ impl MulAssign<f64> for Vec3 {
     }
 }
 
-impl Div<f64> for Vec3 {
+impl<T: Into<f64>> Div<T> for Vec3 {
     type Output = Self;
 
     #[inline]
-    fn div(self, other: f64) -> Self {
-        self * (1.0 / other)
+    fn div(self, other: T) -> Self {
+        self * (1.0 / other.into())
     }
 }
 
