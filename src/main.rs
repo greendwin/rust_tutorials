@@ -1,6 +1,7 @@
 // url: https://raytracing.github.io/books/RayTracingInOneWeekend.html
 
 use std::io;
+use std::rc::Rc;
 
 use rust_ray::bitmap::Bitmap;
 use rust_ray::math::*;
@@ -12,12 +13,12 @@ fn ray_color(ray: &Ray, hittable: &impl HitRay, depth: i32) -> Vec3 {
         return Vec3::zero();
     }
 
-    if let Some(hit) = hittable.hit(ray, 0.001, f64::MAX) {
-        // let next_dir = hit.norm + rand_vec3_in_unit_sphere().norm(); // lambertian
-        let next_dir = hit.norm + rand_vec3_in_hemisphere(hit.norm); // old times
+    if let Some((hit, mat)) = hittable.hit(ray, 0.001, f64::MAX) {
+        if let Some((next_ray, color)) = mat.scatter(&ray, &hit) {
+            return color * ray_color(&next_ray, hittable, depth - 1);
+        }
 
-        let next_ray = Ray::new(hit.pt, next_dir);
-        return ray_color(&next_ray, hittable, depth - 1) * 0.5;
+        return Vec3::zero();
     }
 
     let norm_dir = ray.dir.norm();
@@ -44,9 +45,13 @@ fn main() -> io::Result<()> {
 
     // Scene
 
+    // let diffuse_gray: MaterialPtr = DiffuseMat::new((0.5, 0.5, 0.5));
+    let diffuse_red: MaterialPtr = DiffuseMat::new(Vec3::from_hex(0x900D09));
+    let diffuse_green: MaterialPtr = DiffuseMat::new(Vec3::from_hex(0x50C878));
+
     let mut scene = Scene::new();
-    scene.add(Sphere::new((0, 0, -1), 0.5));
-    scene.add(Sphere::new((0, -100.5, -1), 100));
+    scene.add(Sphere::new((0, 0, -1), 0.5, Rc::clone(&diffuse_red)));
+    scene.add(Sphere::new((0, -100.5, -1), 100, Rc::clone(&diffuse_green)));
 
     // Camera
 

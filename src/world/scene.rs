@@ -17,14 +17,14 @@ impl Scene {
 }
 
 impl HitRay for Scene {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Hit> {
-        let mut closest_hit: Option<Hit> = None;
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, MaterialPtr)> {
+        let mut closest_hit = None;
         let mut cur_t_max = t_max;
 
         for obj in &self.objects {
-            if let Some(hit) = obj.hit(ray, t_min, cur_t_max) {
+            if let Some((hit, mat)) = obj.hit(ray, t_min, cur_t_max) {
                 cur_t_max = hit.t;
-                closest_hit.replace(hit);
+                closest_hit.replace((hit, mat));
             }
         }
 

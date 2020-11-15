@@ -1,22 +1,27 @@
-use super::ray::*;
+use std::rc::Rc;
+
+use super::material::MaterialPtr;
+use super::ray::{Hit, HitRay, Ray};
 use super::vec3::Vec3;
 
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
+    pub material: MaterialPtr,
 }
 
 impl Sphere {
-    pub fn new(center: impl Into<Vec3>, radius: impl Into<f64>) -> Self {
+    pub fn new(center: impl Into<Vec3>, radius: impl Into<f64>, material: MaterialPtr) -> Self {
         Self {
             center: center.into(),
             radius: radius.into(),
+            material,
         }
     }
 }
 
 impl HitRay for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Hit> {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, MaterialPtr)> {
         let oc = ray.orig - self.center;
         let a = ray.dir.length_squared();
         let half_b = oc.dot(ray.dir);
@@ -42,8 +47,10 @@ impl HitRay for Sphere {
         let pt = ray.at(t);
         let outward_norm = (pt - self.center) / self.radius;
 
-        // assume closest `t` is in front of camera (for now)
-        Some(Hit::new(ray, t, pt, outward_norm))
+        Some((
+            Hit::new(ray, t, pt, outward_norm),
+            Rc::clone(&self.material),
+        ))
     }
 }
 

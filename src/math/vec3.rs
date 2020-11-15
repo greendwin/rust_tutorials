@@ -26,6 +26,20 @@ impl Vec3 {
     }
 
     #[inline]
+    pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
+        Self::new(r as f64 / 255.0, g as f64 / 255.0, b as f64 / 255.0)
+    }
+
+    #[inline]
+    pub fn from_hex(val: u32) -> Self {
+        let r = (val >> 16) & 0xff;
+        let g = (val >> 8) & 0xff;
+        let b = val & 0xff;
+
+        Self::from_rgb(r as u8, g as u8, b as u8)
+    }
+
+    #[inline]
     pub fn from_scalar(scalar: impl Into<f64>) -> Self {
         let scalar = scalar.into();
 

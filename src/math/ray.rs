@@ -1,3 +1,4 @@
+use super::material::MaterialPtr;
 use super::vec3::Vec3;
 
 #[derive(Debug, Clone)]
@@ -27,7 +28,7 @@ impl Hit {
 }
 
 pub trait HitRay {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Hit>;
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, MaterialPtr)>;
 }
 
 #[derive(Debug, Clone)]
