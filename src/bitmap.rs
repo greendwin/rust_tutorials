@@ -136,9 +136,9 @@ impl BitmapInfoHeader {
 }
 
 impl Bitmap {
-    pub fn new(width: usize, height: usize, fill: Color) -> Self {
+    pub fn new(width: usize, height: usize, fill: impl Into<Color>) -> Self {
         let mut data = Vec::new();
-        data.resize(width * height, fill);
+        data.resize(width * height, fill.into());
 
         Self {
             width,

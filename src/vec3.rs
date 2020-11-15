@@ -210,20 +210,14 @@ impl Div<f64> for Vec3 {
 
     #[inline]
     fn div(self, other: f64) -> Self {
-        Self {
-            x: self.x / other,
-            y: self.y / other,
-            z: self.z / other,
-        }
+        self * (1.0 / other)
     }
 }
 
 impl DivAssign<f64> for Vec3 {
     #[inline]
     fn div_assign(&mut self, other: f64) {
-        self.x /= other;
-        self.y /= other;
-        self.z /= other;
+        *self *= 1.0 / other;
     }
 }
 
@@ -337,7 +331,7 @@ mod test {
         v /= 10.0;
         assert_eq!(v.x, 0.1);
         assert_eq!(v.y, 0.2);
-        assert_eq!(v.z, 0.3);
+        assert!(v.z.avg_eq(0.3));
     }
 
     #[test]

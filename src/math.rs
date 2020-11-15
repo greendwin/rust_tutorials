@@ -1,4 +1,5 @@
 use num::Float;
+use std::ops::*;
 
 pub trait AvgEq {
     fn avg_eq(self, other: Self) -> bool;
@@ -28,9 +29,10 @@ where
 }
 
 #[inline]
-pub fn lerp<T>(t: T, a: T, b: T) -> T
+pub fn lerp<T, U>(t: T, a: U, b: U) -> U
 where
     T: Float,
+    U: Copy + Add<Output = U> + Sub<Output = U> + Mul<T, Output = U>,
 {
     a + (b - a) * clamp01(t)
 }
