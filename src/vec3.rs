@@ -1,29 +1,23 @@
-use num::{Float, Num};
 use std::fmt::{self, Display};
 use std::ops::*;
 
 use crate::math::AvgEq;
 
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
-pub struct V3<T>
-where
-    T: Num + Copy,
-{
-    pub x: T,
-    pub y: T,
-    pub z: T,
+pub struct Vec3 {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
-pub type Vec3 = V3<f64>;
-
-impl<T: Num + Copy> V3<T> {
+impl Vec3 {
     #[inline]
     pub fn zero() -> Self {
-        Self::new(T::zero(), T::zero(), T::zero())
+        Self::new(0, 0, 0)
     }
 
     #[inline]
-    pub fn new(x: impl Into<T>, y: impl Into<T>, z: impl Into<T>) -> Self {
+    pub fn new(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>) -> Self {
         Self {
             x: x.into(),
             y: y.into(),
@@ -32,7 +26,7 @@ impl<T: Num + Copy> V3<T> {
     }
 
     #[inline]
-    pub fn from_scalar(scalar: impl Into<T>) -> Self {
+    pub fn from_scalar(scalar: impl Into<f64>) -> Self {
         let scalar = scalar.into();
 
         Self {
@@ -43,22 +37,17 @@ impl<T: Num + Copy> V3<T> {
     }
 
     #[inline]
-    pub fn length<R>(&self) -> R
-    where
-        R: Float,
-        T: Into<R>,
-    {
-        let r: R = self.length_squared().into();
-        r.sqrt()
+    pub fn length(&self) -> f64 {
+        self.length_squared().sqrt()
     }
 
     #[inline]
-    pub fn length_squared(&self) -> T {
+    pub fn length_squared(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
     #[inline]
-    pub fn dot(&self, other: Self) -> T {
+    pub fn dot(&self, other: Self) -> f64 {
         let r = *self * other;
         r.x + r.y + r.z
     }
@@ -73,36 +62,33 @@ impl<T: Num + Copy> V3<T> {
     }
 
     #[inline]
-    pub fn norm(&self) -> Self
-    where
-        T: Float,
-    {
+    pub fn norm(&self) -> Self {
         *self / self.length()
     }
 }
 
-impl<T> Display for V3<T>
-where
-    T: Num + Copy + Display,
-{
+impl Display for Vec3 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({}, {}, {})", self.x, self.y, self.z)
     }
 }
 
-impl<T> AvgEq for V3<T>
+impl<T> From<(T, T, T)> for Vec3
 where
-    T: Float,
+    T: Into<f64>,
 {
+    fn from(other: (T, T, T)) -> Self {
+        Self::new(other.0, other.1, other.2)
+    }
+}
+
+impl AvgEq for Vec3 {
     fn avg_eq(self, other: Self) -> bool {
         self.x.avg_eq(other.x) && self.y.avg_eq(other.y) && self.z.avg_eq(other.z)
     }
 }
 
-impl<T> Neg for V3<T>
-where
-    T: Num + Copy + Neg<Output = T>,
-{
+impl Neg for Vec3 {
     type Output = Self;
 
     #[inline]
@@ -115,10 +101,7 @@ where
     }
 }
 
-impl<T> Add for V3<T>
-where
-    T: Num + Copy,
-{
+impl Add for Vec3 {
     type Output = Self;
 
     #[inline]
@@ -131,14 +114,11 @@ where
     }
 }
 
-impl<T> Add<T> for V3<T>
-where
-    T: Num + Copy,
-{
+impl Add<f64> for Vec3 {
     type Output = Self;
 
     #[inline]
-    fn add(self, other: T) -> Self {
+    fn add(self, other: f64) -> Self {
         Self {
             x: self.x + other,
             y: self.y + other,
@@ -147,10 +127,7 @@ where
     }
 }
 
-impl<T> AddAssign for V3<T>
-where
-    T: Num + Copy + AddAssign,
-{
+impl AddAssign for Vec3 {
     #[inline]
     fn add_assign(&mut self, other: Self) {
         self.x += other.x;
@@ -159,21 +136,15 @@ where
     }
 }
 
-impl<T> AddAssign<T> for V3<T>
-where
-    T: Num + Copy + AddAssign,
-{
-    fn add_assign(&mut self, other: T) {
+impl AddAssign<f64> for Vec3 {
+    fn add_assign(&mut self, other: f64) {
         self.x += other;
         self.y += other;
         self.z += other;
     }
 }
 
-impl<T> Sub for V3<T>
-where
-    T: Num + Copy,
-{
+impl Sub for Vec3 {
     type Output = Self;
 
     #[inline]
@@ -186,14 +157,11 @@ where
     }
 }
 
-impl<T> Sub<T> for V3<T>
-where
-    T: Num + Copy,
-{
+impl Sub<f64> for Vec3 {
     type Output = Self;
 
     #[inline]
-    fn sub(self, other: T) -> Self {
+    fn sub(self, other: f64) -> Self {
         Self {
             x: self.x - other,
             y: self.y - other,
@@ -202,10 +170,7 @@ where
     }
 }
 
-impl<T> Mul for V3<T>
-where
-    T: Num + Copy,
-{
+impl Mul for Vec3 {
     type Output = Self;
 
     #[inline]
@@ -218,14 +183,11 @@ where
     }
 }
 
-impl<T> Mul<T> for V3<T>
-where
-    T: Num + Copy,
-{
+impl Mul<f64> for Vec3 {
     type Output = Self;
 
     #[inline]
-    fn mul(self, other: T) -> Self {
+    fn mul(self, other: f64) -> Self {
         Self {
             x: self.x * other,
             y: self.y * other,
@@ -234,26 +196,20 @@ where
     }
 }
 
-impl<T> MulAssign<T> for V3<T>
-where
-    T: Num + Copy + MulAssign,
-{
+impl MulAssign<f64> for Vec3 {
     #[inline]
-    fn mul_assign(&mut self, other: T) {
+    fn mul_assign(&mut self, other: f64) {
         self.x *= other;
         self.y *= other;
         self.z *= other;
     }
 }
 
-impl<T> Div<T> for V3<T>
-where
-    T: Num + Copy,
-{
+impl Div<f64> for Vec3 {
     type Output = Self;
 
     #[inline]
-    fn div(self, other: T) -> Self {
+    fn div(self, other: f64) -> Self {
         Self {
             x: self.x / other,
             y: self.y / other,
@@ -262,12 +218,9 @@ where
     }
 }
 
-impl<T> DivAssign<T> for V3<T>
-where
-    T: Num + Copy + DivAssign,
-{
+impl DivAssign<f64> for Vec3 {
     #[inline]
-    fn div_assign(&mut self, other: T) {
+    fn div_assign(&mut self, other: f64) {
         self.x /= other;
         self.y /= other;
         self.z /= other;
