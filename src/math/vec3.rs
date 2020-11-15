@@ -61,6 +61,11 @@ impl Vec3 {
     }
 
     #[inline]
+    pub fn near_zero(&self) -> bool {
+        self.x.avg_eq(0.0) && self.y.avg_eq(0.0) && self.z.avg_eq(0.0)
+    }
+
+    #[inline]
     pub fn dot(&self, other: Self) -> f64 {
         let r = *self * other;
         r.x + r.y + r.z
@@ -87,6 +92,10 @@ impl Vec3 {
             y: self.y.sqrt(),
             z: self.z.sqrt(),
         }
+    }
+
+    pub fn reflect(&self, norm: Vec3) -> Self {
+        *self - norm * (2.0 * self.dot(norm))
     }
 }
 

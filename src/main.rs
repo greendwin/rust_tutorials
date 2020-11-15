@@ -45,13 +45,16 @@ fn main() -> io::Result<()> {
 
     // Scene
 
-    // let diffuse_gray: MaterialPtr = DiffuseMat::new((0.5, 0.5, 0.5));
-    let diffuse_red: MaterialPtr = DiffuseMat::new(Vec3::from_hex(0x900D09));
-    let diffuse_green: MaterialPtr = DiffuseMat::new(Vec3::from_hex(0x50C878));
+    let mat_ground: MaterialPtr = DiffuseMat::new((0.8, 0.8, 0));
+    let mat_center: MaterialPtr = DiffuseMat::new((0.7, 0.3, 0.3));
+    let mat_left: MaterialPtr = MetalMat::new((0.8, 0.8, 0.8), 0.3);
+    let mat_right: MaterialPtr = MetalMat::new((0.8, 0.6, 0.2), 1.0);
 
     let mut scene = Scene::new();
-    scene.add(Sphere::new((0, 0, -1), 0.5, Rc::clone(&diffuse_red)));
-    scene.add(Sphere::new((0, -100.5, -1), 100, Rc::clone(&diffuse_green)));
+    scene.add(Sphere::new((0, -100.5, -1), 100, Rc::clone(&mat_ground)));
+    scene.add(Sphere::new((0, 0, -1), 0.5, Rc::clone(&mat_center)));
+    scene.add(Sphere::new((-1, 0, -1), 0.5, Rc::clone(&mat_left)));
+    scene.add(Sphere::new((1, 0, -1), 0.5, Rc::clone(&mat_right)));
 
     // Camera
 
