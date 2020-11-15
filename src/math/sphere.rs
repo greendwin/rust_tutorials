@@ -40,10 +40,10 @@ impl HitRay for Sphere {
         }
 
         let pt = ray.at(t);
-        let norm = (pt - self.center) / self.radius;
+        let outward_norm = (pt - self.center) / self.radius;
 
         // assume closest `t` is in front of camera (for now)
-        Some(Hit { pt, norm, t })
+        Some(Hit::new(ray, t, pt, outward_norm))
     }
 }
 

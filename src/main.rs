@@ -4,12 +4,11 @@ use std::io;
 
 use rust_ray::bitmap::Bitmap;
 use rust_ray::math::*;
+use rust_ray::scene::*;
 
-fn ray_color(ray: &Ray, spheres: &[Sphere]) -> Vec3 {
-    for s in spheres {
-        if let Some(hit) = s.hit(ray, 0.0, f64::MAX) {
-            return (hit.norm + 1.0) * 0.5;
-        }
+fn ray_color(ray: &Ray, hittable: &impl HitRay) -> Vec3 {
+    if let Some(hit) = hittable.hit(ray, 0.0, f64::MAX) {
+        return (hit.norm + 1.0) * 0.5;
     }
 
     let norm_dir = ray.dir.norm();
@@ -20,7 +19,9 @@ fn ray_color(ray: &Ray, spheres: &[Sphere]) -> Vec3 {
 fn main() -> io::Result<()> {
     // Scene
 
-    let spheres = vec![Sphere::new((0, 0, -1), 0.5)];
+    let mut scene = Scene::new();
+    scene.add(Sphere::new((0, 0, -1), 0.5));
+    scene.add(Sphere::new((0, -100.5, -1), 100));
 
     // Image
 
@@ -63,7 +64,7 @@ fn main() -> io::Result<()> {
                 lower_left_corner + horizontal * u + vertical * v - origin,
             );
 
-            let pixel_color = ray_color(&ray, &spheres);
+            let pixel_color = ray_color(&ray, &scene);
             r.set_pixel(x, y, pixel_color);
         }
     }
