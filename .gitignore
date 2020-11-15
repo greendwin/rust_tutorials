@@ -53,3 +53,6 @@ Thumbs.db
 #Added by cargo
 
 /target
+
+# temp file
+output.bmp      

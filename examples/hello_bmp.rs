@@ -1,4 +1,4 @@
-use rust_ray::bitmap::{Bitmap, Color, ColorF};
+use rust_ray::bitmap::{Bitmap, Color};
 use std::io;
 
 fn main() -> io::Result<()> {
@@ -10,7 +10,7 @@ fn main() -> io::Result<()> {
             let g = y as f32 / (bmp.height() - 1) as f32;
             let b = 0.25;
 
-            bmp.set_pixel(x, y, ColorF::new(r, g, b));
+            bmp.set_pixel(x, y, (r, g, b));
         }
     }
 

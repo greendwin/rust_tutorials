@@ -6,6 +6,7 @@ use std::path::Path;
 
 use crate::math::lerp;
 use crate::raw_view::{RawStruct, RawView};
+use crate::vec3::Vec3;
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Copy, Clone, Debug)]
 #[repr(C, packed)]
@@ -39,33 +40,26 @@ impl Color {
     }
 }
 
-#[derive(PartialOrd, PartialEq, Copy, Clone, Debug)]
-pub struct ColorF {
-    pub r: f32,
-    pub g: f32,
-    pub b: f32,
+pub fn lerp_ratio_to_u8(v: f64) -> u8 {
+    lerp(v, 0.0, 255.999) as u8
 }
 
-impl ColorF {
-    pub fn new(r: f32, g: f32, b: f32) -> Self {
-        Self { r, g, b }
-    }
-
-    pub fn black() -> Self {
-        Self::new(0.0, 0.0, 0.0)
-    }
-
-    pub fn lerp_to_u8(v: f32) -> u8 {
-        lerp(v, 0.0, 255.999) as u8
-    }
-}
-
-impl From<ColorF> for Color {
-    fn from(col: ColorF) -> Self {
+impl From<Vec3> for Color {
+    fn from(col: Vec3) -> Self {
         Color::new(
-            ColorF::lerp_to_u8(col.r),
-            ColorF::lerp_to_u8(col.g),
-            ColorF::lerp_to_u8(col.b),
+            lerp_ratio_to_u8(col.x),
+            lerp_ratio_to_u8(col.y),
+            lerp_ratio_to_u8(col.z),
+        )
+    }
+}
+
+impl<T: Into<f64>> From<(T, T, T)> for Color {
+    fn from(col: (T, T, T)) -> Self {
+        Color::new(
+            lerp_ratio_to_u8(col.0.into()),
+            lerp_ratio_to_u8(col.1.into()),
+            lerp_ratio_to_u8(col.2.into()),
         )
     }
 }
