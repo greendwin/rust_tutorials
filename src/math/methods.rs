@@ -38,9 +38,10 @@ where
 }
 
 #[inline]
-pub fn lerp_unclamped<T>(t: T, a: T, b: T) -> T
+pub fn lerp_unclamped<T, U>(t: T, a: U, b: U) -> U
 where
     T: Float,
+    U: Copy + Add<Output = U> + Sub<Output = U> + Mul<T, Output = U>,
 {
     a + (b - a) * t
 }

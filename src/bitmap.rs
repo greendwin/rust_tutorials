@@ -4,8 +4,8 @@ use std::io::{self, BufWriter};
 use std::mem;
 use std::path::Path;
 
-use crate::math::{lerp, Vec3};
-use crate::utils::{RawStruct, RawView};
+use crate::math::*;
+use crate::utils::*;
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Copy, Clone, Debug)]
 #[repr(C, packed)]
@@ -40,7 +40,7 @@ impl Color {
 }
 
 pub fn lerp_ratio_to_u8(v: f64) -> u8 {
-    lerp(v, 0.0, 255.999) as u8
+    (256.0 * clamp(v, 0.0, 0.99999)) as u8
 }
 
 impl From<Vec3> for Color {

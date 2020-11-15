@@ -65,6 +65,15 @@ impl Vec3 {
     pub fn norm(&self) -> Self {
         *self / self.length()
     }
+
+    #[inline]
+    pub fn sqrt(&self) -> Self {
+        Self {
+            x: self.x.sqrt(),
+            y: self.y.sqrt(),
+            z: self.z.sqrt(),
+        }
+    }
 }
 
 impl Display for Vec3 {

@@ -7,14 +7,30 @@ use rust_ray::math::*;
 use rust_ray::utils::*;
 use rust_ray::world::*;
 
-fn ray_color(ray: &Ray, hittable: &impl HitRay) -> Vec3 {
-    if let Some(hit) = hittable.hit(ray, 0.0, f64::MAX) {
-        return (hit.norm + 1.0) * 0.5;
+fn ray_color(ray: &Ray, hittable: &impl HitRay, depth: i32) -> Vec3 {
+    if depth <= 0 {
+        return Vec3::zero();
+    }
+
+    if let Some(hit) = hittable.hit(ray, 0.001, f64::MAX) {
+        // let next_dir = hit.norm + rand_vec3_in_unit_sphere().norm(); // lambertian
+        let next_dir = hit.norm + rand_vec3_in_hemisphere(hit.norm); // old times
+
+        let next_ray = Ray::new(hit.pt, next_dir);
+        return ray_color(&next_ray, hittable, depth - 1) * 0.5;
     }
 
     let norm_dir = ray.dir.norm();
     let t = 0.5 * (norm_dir.y + 1.0);
     lerp(t, Vec3::new(1, 1, 1), Vec3::new(0.5, 0.7, 1.0))
+}
+
+fn release_debug<T>(_rel_val: T, _debug_val: T) -> T {
+    #[cfg(debug_assertions)]
+    return _debug_val;
+
+    #[cfg(not(debug_assertions))]
+    return _rel_val;
 }
 
 fn main() -> io::Result<()> {
@@ -23,12 +39,8 @@ fn main() -> io::Result<()> {
     let image_width = 640;
     let image_height = 480;
     let aspect_ratio = image_width as f64 / image_height as f64;
-
-    #[cfg(debug_assertions)]
-    let samples_per_pixel = 4;
-
-    #[cfg(not(debug_assertions))]
-    let samples_per_pixel = 100;
+    let samples_per_pixel = release_debug(100, 4);
+    let max_depth = release_debug(50, 2);
 
     // Scene
 
@@ -63,10 +75,10 @@ fn main() -> io::Result<()> {
                 let u = inv_lerp(x + random(), 0.0, (r.width() - 1) as f64);
                 let v = inv_lerp(y + random(), 0.0, (r.height() - 1) as f64);
                 let ray = camera.get_ray(u, v);
-                accum_color += ray_color(&ray, &scene);
+                accum_color += ray_color(&ray, &scene, max_depth);
             }
 
-            r.set_pixel(x, y, accum_color / samples_per_pixel);
+            r.set_pixel(x, y, (accum_color / samples_per_pixel).sqrt());
         }
     }
 

@@ -1,12 +1,6 @@
 use super::vec3::Vec3;
 
 #[derive(Debug, Clone)]
-pub struct Ray {
-    pub orig: Vec3,
-    pub dir: Vec3,
-}
-
-#[derive(Debug, Clone)]
 pub struct Hit {
     pub pt: Vec3,
     pub norm: Vec3,
@@ -34,6 +28,12 @@ impl Hit {
 
 pub trait HitRay {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Hit>;
+}
+
+#[derive(Debug, Clone)]
+pub struct Ray {
+    pub orig: Vec3,
+    pub dir: Vec3,
 }
 
 impl Ray {
