@@ -1,0 +1,23 @@
+# image
+IMG=640, 480
+SAMPLES=100
+MAX_DEPTH=50
+
+# camera
+CAM_POS=(-2, 2, 1)
+CAM_LOOKAT=(-0.1, 0, -1)
+CAM_UP=(0, 1, 0)
+CAM_FOV=45
+
+# materials
+MAT ground diff (0.8, 0.8, 0.8)
+MAT center diff (0.1, 0.2, 0.5)
+MAT left dielect 1.5
+MAT right metal (0.8, 0.6, 0.2), 0.2
+
+# objects
+SPHERE ground (0, -100.5, -1), 100
+SPHERE center (0, 0, -1), 0.5
+SPHERE left (-1, 0, -1), 0.5
+SPHERE left (-1, 0, -1), -0.45
+SPHERE right (1, 0, -1), 0.5
