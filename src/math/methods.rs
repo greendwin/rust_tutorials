@@ -1,4 +1,5 @@
 use num::Float;
+use std::f64;
 use std::ops::*;
 
 pub trait AvgEq {
@@ -56,6 +57,11 @@ where
     }
 
     (val - a) / (b - a)
+}
+
+#[inline]
+pub fn deg_to_rad(deg: f64) -> f64 {
+    deg * f64::consts::PI / 180.0
 }
 
 #[cfg(test)]
