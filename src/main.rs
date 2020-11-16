@@ -8,8 +8,11 @@ const SCENE_DECL: &str = "
 
     # camera
     CAM_POS: [-2, 2, 1]
+    CAM_POS: 3, 3, 2
     CAM_LOOKAT: [-0.2, 0, -1]
-    CAM_FOV: 45
+    FOV: 45
+    FOV: 20
+    APERTURE: 2.0
 
     # materials
     MAT_DIFF ground (0.8, 0.8, 0)

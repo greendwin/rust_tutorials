@@ -24,6 +24,7 @@ pub struct Loader {
     cam_lookat: Option<Vec3>,
     cam_up: Option<Vec3>,
     cam_fov: Option<f64>,
+    cam_aperture: Option<f64>,
 
     // world
     materials: HashMap<String, SomeMaterial>,
@@ -79,6 +80,7 @@ impl Loader {
             cam_lookat: None,
             cam_up: None,
             cam_fov: None,
+            cam_aperture: None,
 
             // world
             materials: HashMap::new(),
@@ -122,6 +124,10 @@ impl Loader {
         self.cam_fov.unwrap_or(90.0)
     }
 
+    pub fn cam_aperture(&self) -> f64 {
+        self.cam_aperture.unwrap_or(0.0)
+    }
+
     pub fn get_mat(&self, name: &str) -> Option<&SomeMaterial> {
         self.materials.get(name)
     }
@@ -137,6 +143,8 @@ impl Loader {
             self.cam_up(),
             self.cam_fov(),
             self.aspect_ratio(),
+            self.cam_aperture(),
+            (self.cam_lookat() - self.cam_pos()).length(),
         )
     }
 
@@ -192,8 +200,11 @@ impl Loader {
                     self.cam_up
                         .replace(parse_args!(command, line, (f64, f64, f64)).into());
                 }
-                "CAM_FOV" => {
+                "FOV" => {
                     self.cam_fov.replace(parse_args!(command, line, (f64)));
+                }
+                "APERTURE" => {
+                    self.cam_aperture.replace(parse_args!(command, line, (f64)));
                 }
                 "MAT_DIFF" => {
                     let (name, r, g, b) = parse_args!(command, line, (str, f64, f64, f64));
@@ -310,7 +321,7 @@ mod test {
             CAM_POS=(-2, 2, 1)\n\
             CAM_LOOKAT=(-0.1, 0, -1)\n\
             CAM_UP=(0, 1, 0)\n\
-            CAM_FOV=45\n\
+            FOV=45\n\
         ";
 
         let loader = Loader::from_str(text).expect("no errors");
@@ -319,6 +330,17 @@ mod test {
         assert_eq!(Vec3::new(-0.1, 0, -1), loader.cam_lookat());
         assert_eq!(Vec3::new(0, 1, 0), loader.cam_up());
         assert_eq!(45.0, loader.cam_fov());
+    }
+
+    #[test]
+    fn cam_aperture() {
+        let text = "
+            APERTURE=2.0
+        ";
+
+        let loader = Loader::from_str(text).expect("no errors");
+
+        assert_eq!(loader.cam_aperture(), 2.0);
     }
 
     #[test]
