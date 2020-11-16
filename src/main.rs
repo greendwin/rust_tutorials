@@ -1,7 +1,6 @@
 // url: https://raytracing.github.io/books/RayTracingInOneWeekend.html
 
 use std::error::Error;
-use std::rc::Rc;
 
 use rust_ray::math::*;
 use rust_ray::world::*;
@@ -15,6 +14,12 @@ const SCENE_DECL: &str = "
     CAM_POS: [-2, 2, 1]
     CAM_LOOKAT: [-0.2, 0, -1]
     CAM_FOV: 45
+
+    # materials
+    MAT_DIFF ground (0.8, 0.8, 0)
+    MAT_DIFF center (0.1, 0.2, 0.5)
+    MAT_DI left 1.5
+    MAT_METAL right (0.8, 0.6, 0.2) 0.2
 ";
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -22,17 +27,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // World
 
-    let mat_ground: MaterialPtr = DiffuseMat::new((0.8, 0.8, 0));
-    let mat_center: MaterialPtr = DiffuseMat::new((0.1, 0.2, 0.5));
-    let mat_left: MaterialPtr = DielectricMat::new(1.5);
-    let mat_right: MaterialPtr = MetalMat::new((0.8, 0.6, 0.2), 0.2);
-
     let mut scene = Scene::new();
-    scene.add(Sphere::new((0, -100.5, -1), 100, Rc::clone(&mat_ground)));
-    scene.add(Sphere::new((0, 0, -1), 0.5, Rc::clone(&mat_center)));
-    scene.add(Sphere::new((-1, 0, -1), 0.5, Rc::clone(&mat_left)));
-    scene.add(Sphere::new((-1, 0, -1), -0.45, Rc::clone(&mat_left)));
-    scene.add(Sphere::new((1, 0, -1), 0.5, Rc::clone(&mat_right)));
+    scene.add(Sphere::new((0, -100.5, -1), 100, loader.get_mat("ground")));
+    scene.add(Sphere::new((0, 0, -1), 0.5, loader.get_mat("center")));
+    scene.add(Sphere::new((-1, 0, -1), 0.5, loader.get_mat("left")));
+    scene.add(Sphere::new((-1, 0, -1), -0.45, loader.get_mat("left")));
+    scene.add(Sphere::new((1, 0, -1), 0.5, loader.get_mat("right")));
 
     // Render
 

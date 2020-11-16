@@ -1,8 +1,13 @@
-use super::camera::Camera;
-use super::loader_error::{LoaderError, LoaderResult, SyntaxContext};
-use super::renderer::Renderer;
+use std::collections::HashMap;
+use std::rc::Rc;
+
 use crate::bitmap::Bitmap;
-use crate::math::Vec3;
+use crate::math::{MaterialPtr, Vec3};
+
+use super::camera::Camera;
+use super::loader_error::*;
+use super::materials::*;
+use super::renderer::Renderer;
 
 use LoaderError::*;
 
@@ -17,18 +22,29 @@ pub struct Loader {
     cam_lookat: Option<Vec3>,
     cam_up: Option<Vec3>,
     cam_fov: Option<f64>,
+
+    // world
+    default_mat: MaterialPtr,
+    materials: HashMap<String, MaterialPtr>,
 }
 
 impl Loader {
     pub fn new() -> Self {
         Self {
+            // image
             image_size: None,
             samples_per_pixel: None,
             max_depth: None,
+
+            // camera
             cam_pos: None,
             cam_lookat: None,
             cam_up: None,
             cam_fov: None,
+
+            // world
+            default_mat: DiffuseMat::new((1, 0, 0)),
+            materials: HashMap::new(),
         }
     }
 
@@ -66,6 +82,11 @@ impl Loader {
 
     pub fn cam_fov(&self) -> f64 {
         self.cam_fov.unwrap_or(90.0)
+    }
+
+    pub fn get_mat(&self, name: &str) -> MaterialPtr {
+        let r = self.materials.get(name).unwrap_or(&self.default_mat);
+        Rc::clone(r)
     }
 
     pub fn new_image(&self) -> Bitmap {
@@ -108,6 +129,13 @@ impl Loader {
                 ("CAM_LOOKAT", 3, "three numbers: x, y, z"),
                 ("CAM_UP", 3, "three numbers: x, y, z"),
                 ("CAM_FOV", 1, "one number"),
+                ("MAT_DIFF", 4, "string and three numbers: name, r, g, b"),
+                ("MAT_DI", 2, "string and number: name, index_of_reflect"),
+                (
+                    "MAT_METAL",
+                    5,
+                    "string and four numbers: name, albedo(r, g, b) and fuzz",
+                ),
             ];
 
             check_num_args(line, &command, &req_args)?;
@@ -115,6 +143,9 @@ impl Loader {
             macro_rules! parse_args {
                 ($($tp:tt),+) =>{
                     parse_args!(@offset 1usize; $($tp),+)
+                };
+                (@offset $off:expr; str) => {
+                    &command[$off]
                 };
                 (@offset $off:expr; $tp:tt) => {
                     command[$off].parse::<$tp>().with_context(line, &command)?
@@ -130,6 +161,23 @@ impl Loader {
                         parse_args!(@offset $off; $t1),
                         parse_args!(@offset $off + 1; $t2),
                         parse_args!(@offset $off + 2; $t3),
+                    )
+                };
+                (@offset $off:expr; $t1:tt, $t2:tt, $t3:tt, $t4:tt) => {
+                    (
+                        parse_args!(@offset $off; $t1),
+                        parse_args!(@offset $off + 1; $t2),
+                        parse_args!(@offset $off + 2; $t3),
+                        parse_args!(@offset $off + 3; $t4),
+                    )
+                };
+                (@offset $off:expr; $t1:tt, $t2:tt, $t3:tt, $t4:tt, $t5:tt) => {
+                    (
+                        parse_args!(@offset $off; $t1),
+                        parse_args!(@offset $off + 1; $t2),
+                        parse_args!(@offset $off + 2; $t3),
+                        parse_args!(@offset $off + 3; $t4),
+                        parse_args!(@offset $off + 4; $t5),
                     )
                 };
             }
@@ -156,6 +204,21 @@ impl Loader {
                 "CAM_FOV" => {
                     self.cam_fov.replace(parse_args!(f64));
                 }
+                "MAT_DIFF" => {
+                    let (name, r, g, b) = parse_args!(str, f64, f64, f64);
+                    self.materials
+                        .insert(name.clone(), DiffuseMat::new((r, g, b)));
+                }
+                "MAT_DI" => {
+                    let (name, index_of_refraction) = parse_args!(str, f64);
+                    self.materials
+                        .insert(name.clone(), DielectricMat::new(index_of_refraction));
+                }
+                "MAT_METAL" => {
+                    let (name, r, g, b, fuzz) = parse_args!(str, f64, f64, f64, f64);
+                    self.materials
+                        .insert(name.clone(), MetalMat::new((r, g, b), fuzz));
+                }
                 _ => panic!("uncovered command: {:?}", command),
             }
         }
@@ -171,9 +234,14 @@ fn check_num_args(
 ) -> LoaderResult<()> {
     for &(cmd, num_args, require_str) in check_config {
         if command[0] == cmd {
-            if command.len() != 1 + num_args {
+            if command.len() - 1 != num_args {
                 return Err(SyntaxError {
-                    msg: format!("{}: require {}", cmd, require_str),
+                    msg: format!(
+                        "{}: found {} args, but require {}",
+                        cmd,
+                        command.len() - 1,
+                        require_str
+                    ),
                     line,
                     command: command.to_owned(),
                 });
@@ -280,4 +348,41 @@ mod test {
         assert_eq!(Vec3::new(0, 1, 0), loader.cam_up());
         assert_eq!(45.0, loader.cam_fov());
     }
+    #[test]
+    fn create_diff_material() {
+        let text = "
+            MAT_DIFF white 1 1 1
+        ";
+
+        let _loader = Loader::from_str(text).expect("no errors");
+
+        // TODO: check DiffuseMat
+        // assert!(loader.get_mat("white").is_some());
+    }
+
+    #[test]
+    fn create_dielectric_material() {
+        let text = "
+            MAT_DI water 1.5
+        ";
+
+        let _loader = Loader::from_str(text).expect("no errors");
+
+        // TODO: check DielectricMat
+        // assert!(loader.get_mat("water").is_some());
+    }
+
+    #[test]
+    fn create_metal_material() {
+        let text = "
+            MAT_METAL block (0.2, 0.3, 0.4) 0.5
+        ";
+
+        let _loader = Loader::from_str(text).expect("no errors");
+
+        // TODO: check MetalMat
+        // assert!(loader.get_mat("block").is_some());
+    }
 }
+
+// TODO: remove `dyn Material` in favor of AnyMaterial enum
