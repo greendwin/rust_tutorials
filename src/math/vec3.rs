@@ -1,7 +1,6 @@
+use std::f64;
 use std::fmt::{self, Display};
 use std::ops::*;
-
-use crate::math::AvgEq;
 
 #[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
 pub struct Vec3 {
@@ -62,7 +61,7 @@ impl Vec3 {
 
     #[inline]
     pub fn near_zero(&self) -> bool {
-        self.x.avg_eq(0.0) && self.y.avg_eq(0.0) && self.z.avg_eq(0.0)
+        self.x.abs() < 1e-6 && self.y.abs() < 1e-6 && self.z.abs() < 1e-6
     }
 
     #[inline]
@@ -109,12 +108,6 @@ where
 {
     fn from(other: (X, Y, Z)) -> Self {
         Self::new(other.0, other.1, other.2)
-    }
-}
-
-impl AvgEq for Vec3 {
-    fn avg_eq(self, other: Self) -> bool {
-        self.x.avg_eq(other.x) && self.y.avg_eq(other.y) && self.z.avg_eq(other.z)
     }
 }
 
@@ -363,7 +356,7 @@ mod test {
         v /= 10.0;
         assert_eq!(v.x, 0.1);
         assert_eq!(v.y, 0.2);
-        assert!(v.z.avg_eq(0.3));
+        assert!((v.z - 0.3).abs() <= f64::EPSILON);
     }
 
     #[test]
@@ -381,10 +374,10 @@ mod test {
 
     #[test]
     fn vec3_norm() {
-        assert!(Vec3::new(1, 1, 1).norm().avg_eq(Vec3::new(
-            3f64.sqrt() / 3.0,
-            3f64.sqrt() / 3.0,
-            3f64.sqrt() / 3.0
-        )));
+        let l = Vec3::new(1, 1, 1).norm();
+        let r = Vec3::new(3f64.sqrt() / 3.0, 3f64.sqrt() / 3.0, 3f64.sqrt() / 3.0);
+        assert!((l.x - r.x).abs() <= f64::EPSILON);
+        assert!((l.y - r.y).abs() <= f64::EPSILON);
+        assert!((l.z - r.z).abs() <= f64::EPSILON);
     }
 }

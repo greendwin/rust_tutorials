@@ -31,6 +31,19 @@ pub struct Loader {
     objs: Vec<SomeObject>,
 }
 
+macro_rules! parse_args {
+    ($command:expr, $line:expr, $($tp:tt),+) => {{
+        let mut it = $command[1..].iter();
+        ($(parse_args!($command, $line; @next it, $tp)),+)
+    }};
+    ($command:expr, $line:expr; @next $it:expr, str) => {
+        $it.next().unwrap()
+    };
+    ($command:expr, $line:expr; @next $it:expr, $tp:tt) => {
+        $it.next().unwrap().parse::<$tp>().with_context($line, &$command)?
+    };
+}
+
 impl Loader {
     pub fn new() -> Self {
         Self {
@@ -158,87 +171,51 @@ impl Loader {
 
             check_num_args(line, &command, &req_args)?;
 
-            macro_rules! parse_args {
-                ($($tp:tt),+) =>{
-                    parse_args!(@offset 1usize; $($tp),+)
-                };
-                (@offset $off:expr; str) => {
-                    &command[$off]
-                };
-                (@offset $off:expr; $tp:tt) => {
-                    command[$off].parse::<$tp>().with_context(line, &command)?
-                };
-                (@offset $off:expr; $t1:tt, $t2:tt) => {
-                    (
-                        parse_args!(@offset $off; $t1),
-                        parse_args!(@offset $off + 1; $t2),
-                    )
-                };
-                (@offset $off:expr; $t1:tt, $t2:tt, $t3:tt) => {
-                    (
-                        parse_args!(@offset $off; $t1),
-                        parse_args!(@offset $off + 1; $t2),
-                        parse_args!(@offset $off + 2; $t3),
-                    )
-                };
-                (@offset $off:expr; $t1:tt, $t2:tt, $t3:tt, $t4:tt) => {
-                    (
-                        parse_args!(@offset $off; $t1),
-                        parse_args!(@offset $off + 1; $t2),
-                        parse_args!(@offset $off + 2; $t3),
-                        parse_args!(@offset $off + 3; $t4),
-                    )
-                };
-                (@offset $off:expr; $t1:tt, $t2:tt, $t3:tt, $t4:tt, $t5:tt) => {
-                    (
-                        parse_args!(@offset $off; $t1),
-                        parse_args!(@offset $off + 1; $t2),
-                        parse_args!(@offset $off + 2; $t3),
-                        parse_args!(@offset $off + 3; $t4),
-                        parse_args!(@offset $off + 4; $t5),
-                    )
-                };
-            }
-
             match &*command[0] {
                 "IMG" => {
-                    self.image_size.replace(parse_args!(usize, usize));
+                    self.image_size
+                        .replace(parse_args!(command, line, usize, usize));
                 }
                 "SAMPLES" => {
-                    self.samples_per_pixel.replace(parse_args!(usize));
+                    self.samples_per_pixel
+                        .replace(parse_args!(command, line, usize));
                 }
                 "MAX_DEPTH" => {
-                    self.max_depth.replace(parse_args!(usize));
+                    self.max_depth.replace(parse_args!(command, line, usize));
                 }
                 "CAM_POS" => {
-                    self.cam_pos.replace(parse_args!(f64, f64, f64).into());
+                    self.cam_pos
+                        .replace(parse_args!(command, line, f64, f64, f64).into());
                 }
                 "CAM_LOOKAT" => {
-                    self.cam_lookat.replace(parse_args!(f64, f64, f64).into());
+                    self.cam_lookat
+                        .replace(parse_args!(command, line, f64, f64, f64).into());
                 }
                 "CAM_UP" => {
-                    self.cam_up.replace(parse_args!(f64, f64, f64).into());
+                    self.cam_up
+                        .replace(parse_args!(command, line, f64, f64, f64).into());
                 }
                 "CAM_FOV" => {
-                    self.cam_fov.replace(parse_args!(f64));
+                    self.cam_fov.replace(parse_args!(command, line, f64));
                 }
                 "MAT_DIFF" => {
-                    let (name, r, g, b) = parse_args!(str, f64, f64, f64);
+                    let (name, r, g, b) = parse_args!(command, line, str, f64, f64, f64);
                     self.materials
                         .insert(name.clone(), DiffuseMat::new((r, g, b)).into());
                 }
                 "MAT_DI" => {
-                    let (name, index_of_refraction) = parse_args!(str, f64);
+                    let (name, index_of_refraction) = parse_args!(command, line, str, f64);
                     self.materials
                         .insert(name.clone(), DielectricMat::new(index_of_refraction).into());
                 }
                 "MAT_METAL" => {
-                    let (name, r, g, b, fuzz) = parse_args!(str, f64, f64, f64, f64);
+                    let (name, r, g, b, fuzz) = parse_args!(command, line, str, f64, f64, f64, f64);
                     self.materials
                         .insert(name.clone(), MetalMat::new((r, g, b), fuzz).into());
                 }
                 "SPHERE" => {
-                    let (name, x, y, z, radius) = parse_args!(str, f64, f64, f64, f64);
+                    let (name, x, y, z, radius) =
+                        parse_args!(command, line, str, f64, f64, f64, f64);
                     let mat = match self.get_mat(name) {
                         Some(m) => m.clone(),
                         None => {

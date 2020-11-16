@@ -2,17 +2,6 @@ use num::Float;
 use std::f64;
 use std::ops::*;
 
-pub trait AvgEq {
-    fn avg_eq(self, other: Self) -> bool;
-}
-
-impl<T: Float> AvgEq for T {
-    #[inline]
-    fn avg_eq(self, other: Self) -> bool {
-        (other - self).abs() <= T::epsilon()
-    }
-}
-
 #[inline]
 pub fn clamp<T>(val: T, min: T, max: T) -> T
 where

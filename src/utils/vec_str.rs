@@ -1,4 +1,4 @@
-#[allow(unused_macros)]
+#[macro_export]
 macro_rules! vec_str {
     [] => {
         Vec::<String>::new()
