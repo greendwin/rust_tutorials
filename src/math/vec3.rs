@@ -93,10 +93,6 @@ impl Vec3 {
             z: self.z.sqrt(),
         }
     }
-
-    pub fn reflect(&self, norm: Vec3) -> Self {
-        *self - norm * (2.0 * self.dot(norm))
-    }
 }
 
 impl Display for Vec3 {

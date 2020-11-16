@@ -37,8 +37,8 @@ fn release_debug<T>(_rel_val: T, _debug_val: T) -> T {
 fn main() -> io::Result<()> {
     // Image
 
-    let image_width = 640;
-    let image_height = 480;
+    let image_width = 600;
+    let image_height = 300;
     let aspect_ratio = image_width as f64 / image_height as f64;
     let samples_per_pixel = release_debug(100, 4);
     let max_depth = release_debug(50, 2);
@@ -46,14 +46,15 @@ fn main() -> io::Result<()> {
     // Scene
 
     let mat_ground: MaterialPtr = DiffuseMat::new((0.8, 0.8, 0));
-    let mat_center: MaterialPtr = DiffuseMat::new((0.7, 0.3, 0.3));
-    let mat_left: MaterialPtr = MetalMat::new((0.8, 0.8, 0.8), 0.3);
-    let mat_right: MaterialPtr = MetalMat::new((0.8, 0.6, 0.2), 1.0);
+    let mat_center: MaterialPtr = DiffuseMat::new((0.1, 0.2, 0.5));
+    let mat_left: MaterialPtr = DielectricMat::new(1.5);
+    let mat_right: MaterialPtr = MetalMat::new((0.8, 0.6, 0.2), 0.0);
 
     let mut scene = Scene::new();
     scene.add(Sphere::new((0, -100.5, -1), 100, Rc::clone(&mat_ground)));
     scene.add(Sphere::new((0, 0, -1), 0.5, Rc::clone(&mat_center)));
     scene.add(Sphere::new((-1, 0, -1), 0.5, Rc::clone(&mat_left)));
+    scene.add(Sphere::new((-1, 0, -1), -0.4, Rc::clone(&mat_left)));
     scene.add(Sphere::new((1, 0, -1), 0.5, Rc::clone(&mat_right)));
 
     // Camera
