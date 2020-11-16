@@ -6,26 +6,16 @@ pub type LoaderResult<T> = Result<T, LoaderError>;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum LoaderError {
-    NotImplemented,
-    SyntaxError {
-        line: usize,
-        command: Vec<String>,
-        msg: String,
-    },
+    SyntaxError { line: usize, msg: String },
 }
 
 use LoaderError::*;
 
 impl LoaderError {
-    pub fn new_syntax(
-        msg: impl Into<String>,
-        line: usize,
-        command: impl Into<Vec<String>>,
-    ) -> Self {
+    pub fn new_syntax(msg: impl Into<String>, line: usize) -> Self {
         Self::SyntaxError {
             msg: msg.into(),
             line,
-            command: command.into(),
         }
     }
 }
@@ -39,15 +29,14 @@ impl fmt::Display for LoaderError {
 impl Error for LoaderError {}
 
 pub trait SyntaxContext<T> {
-    fn with_context(self, line: usize, command: &[String]) -> LoaderResult<T>;
+    fn with_context(self, line: usize) -> LoaderResult<T>;
 }
 
 impl<T> SyntaxContext<T> for Result<T, ParseIntError> {
-    fn with_context(self, line: usize, command: &[String]) -> LoaderResult<T> {
+    fn with_context(self, line: usize) -> LoaderResult<T> {
         match self {
             Err(err) => Err(SyntaxError {
                 line,
-                command: command.to_owned(),
                 msg: format!("{:?}", err),
             }),
             Ok(r) => Ok(r),
@@ -56,11 +45,10 @@ impl<T> SyntaxContext<T> for Result<T, ParseIntError> {
 }
 
 impl<T> SyntaxContext<T> for Result<T, ParseFloatError> {
-    fn with_context(self, line: usize, command: &[String]) -> LoaderResult<T> {
+    fn with_context(self, line: usize) -> LoaderResult<T> {
         match self {
             Err(err) => Err(SyntaxError {
                 line,
-                command: command.to_owned(),
                 msg: format!("{:?}", err),
             }),
             Ok(r) => Ok(r),

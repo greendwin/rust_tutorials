@@ -26,21 +26,43 @@ pub struct Loader {
     cam_fov: Option<f64>,
 
     // world
-    default_mat: SomeMaterial,
     materials: HashMap<String, SomeMaterial>,
     objs: Vec<SomeObject>,
 }
 
+macro_rules! num_args {
+    () => {
+        0
+    };
+    ($t:tt) => {
+        1
+    };
+    ($t:tt, $($ts:tt),*) => {
+        (1 + num_args!($($ts),*))
+    };
+}
+
 macro_rules! parse_args {
-    ($command:expr, $line:expr, $($tp:tt),+) => {{
+    ($command:expr, $line:expr, ($($tp:tt),+)) => {{
         let mut it = $command[1..].iter();
-        ($(parse_args!($command, $line; @next it, $tp)),+)
+        if $command.len() != 1 + num_args!($($tp),+) {
+            return Err(SyntaxError {
+                msg: format!(
+                    "{}: wrong arguments count, expected ({})",
+                    $command[0],
+                    stringify!($($tp),+)
+                ),
+                line: $line,
+            });
+        }
+
+        ($(parse_args!($line; @next it, $tp)),+)
     }};
-    ($command:expr, $line:expr; @next $it:expr, str) => {
+    ($line:expr; @next $it:expr, str) => {
         $it.next().unwrap()
     };
-    ($command:expr, $line:expr; @next $it:expr, $tp:tt) => {
-        $it.next().unwrap().parse::<$tp>().with_context($line, &$command)?
+    ($line:expr; @next $it:expr, $tp:tt) => {
+        $it.next().unwrap().parse::<$tp>().with_context($line)?
     };
 }
 
@@ -59,7 +81,6 @@ impl Loader {
             cam_fov: None,
 
             // world
-            default_mat: DiffuseMat::new((1, 0, 0)).into(),
             materials: HashMap::new(),
             objs: Vec::new(),
         }
@@ -147,134 +168,75 @@ impl Loader {
                 continue;
             }
 
-            let req_args = vec![
-                ("IMG", 2, "two args: width and height"),
-                ("SAMPLES", 1, "one number"),
-                ("MAX_DEPTH", 1, "one number"),
-                ("CAM_POS", 3, "three numbers: x, y, z"),
-                ("CAM_LOOKAT", 3, "three numbers: x, y, z"),
-                ("CAM_UP", 3, "three numbers: x, y, z"),
-                ("CAM_FOV", 1, "one number"),
-                ("MAT_DIFF", 4, "string and three numbers: name, r, g, b"),
-                ("MAT_DI", 2, "string and number: name, index_of_reflect"),
-                (
-                    "MAT_METAL",
-                    5,
-                    "string and four numbers: name, albedo(r, g, b) and fuzz",
-                ),
-                (
-                    "SPHERE",
-                    5,
-                    "string and four numbers: name, center(x, y, z) and radius",
-                ),
-            ];
-
-            check_num_args(line, &command, &req_args)?;
-
             match &*command[0] {
                 "IMG" => {
                     self.image_size
-                        .replace(parse_args!(command, line, usize, usize));
+                        .replace(parse_args!(command, line, (usize, usize)));
                 }
                 "SAMPLES" => {
                     self.samples_per_pixel
-                        .replace(parse_args!(command, line, usize));
+                        .replace(parse_args!(command, line, (usize)));
                 }
                 "MAX_DEPTH" => {
-                    self.max_depth.replace(parse_args!(command, line, usize));
+                    self.max_depth.replace(parse_args!(command, line, (usize)));
                 }
                 "CAM_POS" => {
                     self.cam_pos
-                        .replace(parse_args!(command, line, f64, f64, f64).into());
+                        .replace(parse_args!(command, line, (f64, f64, f64)).into());
                 }
                 "CAM_LOOKAT" => {
                     self.cam_lookat
-                        .replace(parse_args!(command, line, f64, f64, f64).into());
+                        .replace(parse_args!(command, line, (f64, f64, f64)).into());
                 }
                 "CAM_UP" => {
                     self.cam_up
-                        .replace(parse_args!(command, line, f64, f64, f64).into());
+                        .replace(parse_args!(command, line, (f64, f64, f64)).into());
                 }
                 "CAM_FOV" => {
-                    self.cam_fov.replace(parse_args!(command, line, f64));
+                    self.cam_fov.replace(parse_args!(command, line, (f64)));
                 }
                 "MAT_DIFF" => {
-                    let (name, r, g, b) = parse_args!(command, line, str, f64, f64, f64);
+                    let (name, r, g, b) = parse_args!(command, line, (str, f64, f64, f64));
                     self.materials
                         .insert(name.clone(), DiffuseMat::new((r, g, b)).into());
                 }
                 "MAT_DI" => {
-                    let (name, index_of_refraction) = parse_args!(command, line, str, f64);
+                    let (name, index_of_refraction) = parse_args!(command, line, (str, f64));
                     self.materials
                         .insert(name.clone(), DielectricMat::new(index_of_refraction).into());
                 }
                 "MAT_METAL" => {
-                    let (name, r, g, b, fuzz) = parse_args!(command, line, str, f64, f64, f64, f64);
+                    let (name, r, g, b, fuzz) =
+                        parse_args!(command, line, (str, f64, f64, f64, f64));
                     self.materials
                         .insert(name.clone(), MetalMat::new((r, g, b), fuzz).into());
                 }
                 "SPHERE" => {
                     let (name, x, y, z, radius) =
-                        parse_args!(command, line, str, f64, f64, f64, f64);
+                        parse_args!(command, line, (str, f64, f64, f64, f64));
                     let mat = match self.get_mat(name) {
                         Some(m) => m.clone(),
                         None => {
                             return Err(SyntaxError {
                                 msg: format!("unknown material '{}'", name),
                                 line,
-                                command,
                             })
                         }
                     };
 
                     self.objs.push(Sphere::new((x, y, z), radius, mat).into());
                 }
-                _ => panic!("uncovered command: {:?}", command),
+                _ => {
+                    return Err(SyntaxError {
+                        msg: format!("unknown command '{}'", command[0]),
+                        line,
+                    });
+                }
             }
         }
 
         Ok(())
     }
-}
-
-fn check_num_args(
-    line: usize,
-    command: &[String],
-    check_config: &[(&str, usize, &str)],
-) -> LoaderResult<()> {
-    for &(cmd, num_args, require_str) in check_config {
-        if command[0] == cmd {
-            if command.len() - 1 != num_args {
-                return Err(SyntaxError {
-                    msg: format!(
-                        "{}: found {} args, but require {}",
-                        cmd,
-                        command.len() - 1,
-                        require_str
-                    ),
-                    line,
-                    command: command.to_owned(),
-                });
-            }
-
-            return Ok(());
-        }
-    }
-
-    let mut available_commands: Vec<String> = check_config
-        .iter()
-        .map(|&(cmd, _, _)| cmd.to_owned())
-        .collect();
-    available_commands.sort_unstable();
-
-    return Err(SyntaxError {
-        msg: format!(
-            "unknown command '{}', available commands: {:?}",
-            command[0], available_commands
-        ),
-        line,
-        command: command.to_owned(),
-    });
 }
 
 fn parse_command(mut text: &str) -> Vec<String> {
@@ -444,18 +406,11 @@ mod test {
         let err = Loader::from_str(text).expect_err("must fail on unkown error");
 
         match err {
-            SyntaxError {
-                line,
-                command: _,
-                msg,
-            } => {
+            SyntaxError { line, msg } => {
                 assert_eq!(line, 2);
                 assert!(msg.contains("'unkn'"));
                 assert!(msg.contains("unknown material"));
             }
-            _ => panic!("unexpected error"),
         }
     }
 }
-
-// TODO: remove default material
