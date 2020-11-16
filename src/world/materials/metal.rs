@@ -4,8 +4,8 @@ use crate::world::methods::*;
 
 #[derive(Debug, Clone)]
 pub struct MetalMat {
-    albedo: Vec3,
-    fuzz: f64,
+    pub albedo: Vec3,
+    pub fuzz: f64,
 }
 
 impl MetalMat {

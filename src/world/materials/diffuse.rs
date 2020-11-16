@@ -3,7 +3,7 @@ use crate::utils::*;
 
 #[derive(Debug, Clone)]
 pub struct DiffuseMat {
-    albedo: Vec3,
+    pub albedo: Vec3,
 }
 
 impl DiffuseMat {

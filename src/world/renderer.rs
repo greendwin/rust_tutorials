@@ -21,12 +21,7 @@ impl Renderer {
         }
     }
 
-    pub fn render<'a, Mat, Scn, Target>(&self, camera: &Camera, scene: &Scn, target: &mut Target)
-    where
-        Mat: Material + 'a,
-        Scn: HitRay<'a, Mat = Mat>,
-        Target: RenderTarget,
-    {
+    pub fn render(&self, camera: &Camera, scene: &impl HitRay, target: &mut impl RenderTarget) {
         let mut prev_progress = -1;
 
         let r_height = target.height() as f64;
@@ -57,11 +52,7 @@ impl Renderer {
     }
 }
 
-fn ray_color<'a, Mat, Scn>(ray: &Ray, scene: &Scn, depth: i32) -> Vec3
-where
-    Mat: Material + 'a,
-    Scn: HitRay<'a, Mat = Mat>,
-{
+fn ray_color(ray: &Ray, scene: &impl HitRay, depth: i32) -> Vec3 {
     if depth <= 0 {
         return Vec3::zero();
     }

@@ -4,7 +4,7 @@ use crate::world::methods::*;
 
 #[derive(Debug, Clone)]
 pub struct DielectricMat {
-    ir: f64,
+    pub ir: f64,
 }
 
 impl DielectricMat {

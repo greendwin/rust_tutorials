@@ -1,15 +1,18 @@
 use std::collections::HashMap;
 
 use crate::bitmap::Bitmap;
-use crate::math::Vec3;
+use crate::math::{Sphere, Vec3};
 
 use super::camera::Camera;
 use super::loader_error::*;
 use super::materials::*;
 use super::renderer::Renderer;
+use super::scene::Scene;
+use super::some_object::SomeObject;
 
 use LoaderError::*;
 
+#[derive(Debug)]
 pub struct Loader {
     // image
     image_size: Option<(usize, usize)>,
@@ -25,6 +28,7 @@ pub struct Loader {
     // world
     default_mat: SomeMaterial,
     materials: HashMap<String, SomeMaterial>,
+    objs: Vec<SomeObject>,
 }
 
 impl Loader {
@@ -44,6 +48,7 @@ impl Loader {
             // world
             default_mat: DiffuseMat::new((1, 0, 0)).into(),
             materials: HashMap::new(),
+            objs: Vec::new(),
         }
     }
 
@@ -83,8 +88,8 @@ impl Loader {
         self.cam_fov.unwrap_or(90.0)
     }
 
-    pub fn get_mat(&self, name: &str) -> &SomeMaterial {
-        self.materials.get(name).unwrap_or(&self.default_mat)
+    pub fn get_mat(&self, name: &str) -> Option<&SomeMaterial> {
+        self.materials.get(name)
     }
 
     pub fn new_image(&self) -> Bitmap {
@@ -99,6 +104,16 @@ impl Loader {
             self.cam_fov(),
             self.aspect_ratio(),
         )
+    }
+
+    pub fn new_scene(&self) -> Scene<SomeObject> {
+        let mut r = Scene::new();
+
+        for obj in &self.objs {
+            r.add(obj.clone());
+        }
+
+        return r;
     }
 
     pub fn new_renderer(&self) -> Renderer {
@@ -133,6 +148,11 @@ impl Loader {
                     "MAT_METAL",
                     5,
                     "string and four numbers: name, albedo(r, g, b) and fuzz",
+                ),
+                (
+                    "SPHERE",
+                    5,
+                    "string and four numbers: name, center(x, y, z) and radius",
                 ),
             ];
 
@@ -216,6 +236,21 @@ impl Loader {
                     let (name, r, g, b, fuzz) = parse_args!(str, f64, f64, f64, f64);
                     self.materials
                         .insert(name.clone(), MetalMat::new((r, g, b), fuzz).into());
+                }
+                "SPHERE" => {
+                    let (name, x, y, z, radius) = parse_args!(str, f64, f64, f64, f64);
+                    let mat = match self.get_mat(name) {
+                        Some(m) => m.clone(),
+                        None => {
+                            return Err(SyntaxError {
+                                msg: format!("unknown material '{}'", name),
+                                line,
+                                command,
+                            })
+                        }
+                    };
+
+                    self.objs.push(Sphere::new((x, y, z), radius, mat).into());
                 }
                 _ => panic!("uncovered command: {:?}", command),
             }
@@ -350,15 +385,17 @@ mod test {
     #[test]
     fn create_diff_material() {
         let text = "
-            MAT_DIFF white 1 1 1
+            MAT_DIFF white 1 2 3
         ";
 
         let loader = Loader::from_str(text).expect("no errors");
 
-        match loader.get_mat("white") {
-            SomeMaterial::Diff(_) => (),
+        let mat = match loader.get_mat("white") {
+            Some(SomeMaterial::Diff(m)) => m,
             mat => panic!("wrong material {:?}", mat),
-        }
+        };
+
+        assert_eq!(mat.albedo, Vec3::new(1, 2, 3));
     }
 
     #[test]
@@ -369,10 +406,12 @@ mod test {
 
         let loader = Loader::from_str(text).expect("no errors");
 
-        match loader.get_mat("water") {
-            SomeMaterial::Di(_) => (),
+        let mat = match loader.get_mat("water") {
+            Some(SomeMaterial::Di(m)) => m,
             mat => panic!("wrong material {:?}", mat),
-        }
+        };
+
+        assert_eq!(mat.ir, 1.5);
     }
 
     #[test]
@@ -383,9 +422,63 @@ mod test {
 
         let loader = Loader::from_str(text).expect("no errors");
 
-        match loader.get_mat("block") {
-            SomeMaterial::Metal(_) => (),
+        let mat = match loader.get_mat("block") {
+            Some(SomeMaterial::Metal(m)) => m,
             mat => panic!("wrong material {:?}", mat),
+        };
+
+        assert_eq!(mat.albedo, Vec3::new(0.2, 0.3, 0.4));
+        assert_eq!(mat.fuzz, 0.5);
+    }
+
+    #[test]
+    fn create_obj() {
+        let text = "
+            MAT_METAL block (0.2, 0.3, 0.4) 0.5
+            SPHERE block (1, 2, 3) 10
+        ";
+
+        let loader = Loader::from_str(text).expect("no errors");
+
+        assert_eq!(1, loader.objs.len());
+
+        let sphere = match &loader.objs[0] {
+            SomeObject::Sphere(sph) => sph,
+        };
+
+        assert_eq!(sphere.center, Vec3::new(1, 2, 3));
+        assert_eq!(sphere.radius, 10.0);
+
+        let mat = match &sphere.material {
+            SomeMaterial::Metal(m) => m,
+            _ => panic!("unexpected material type {:?}", sphere.material),
+        };
+
+        assert_eq!(mat.albedo, Vec3::new(0.2, 0.3, 0.4));
+        assert_eq!(mat.fuzz, 0.5);
+    }
+
+    #[test]
+    fn unknown_material() {
+        let text = "
+            SPHERE unkn (1, 2, 3) 10
+        ";
+
+        let err = Loader::from_str(text).expect_err("must fail on unkown error");
+
+        match err {
+            SyntaxError {
+                line,
+                command: _,
+                msg,
+            } => {
+                assert_eq!(line, 2);
+                assert!(msg.contains("'unkn'"));
+                assert!(msg.contains("unknown material"));
+            }
+            _ => panic!("unexpected error"),
         }
     }
 }
+
+// TODO: remove default material

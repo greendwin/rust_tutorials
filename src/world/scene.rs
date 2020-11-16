@@ -14,13 +14,13 @@ impl<Obj> Scene<Obj> {
     }
 }
 
-impl<'a, Obj> HitRay<'a> for Scene<Obj>
+impl<Obj> HitRay for Scene<Obj>
 where
-    Obj: HitRay<'a>,
+    Obj: HitRay,
 {
     type Mat = Obj::Mat;
 
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, &'a Self::Mat)> {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, Self::Mat)> {
         let mut closest_hit = None;
         let mut cur_t_max = t_max;
 

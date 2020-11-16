@@ -27,10 +27,10 @@ impl Hit {
     }
 }
 
-pub trait HitRay<'a> {
+pub trait HitRay {
     type Mat: Material;
 
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, &'a Self::Mat)>;
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, Self::Mat)>;
 }
 
 #[derive(Debug, Clone)]

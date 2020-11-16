@@ -10,10 +10,10 @@ CAM_UP=(0, 1, 0)
 CAM_FOV=45
 
 # materials
-MAT ground diff (0.8, 0.8, 0.8)
-MAT center diff (0.1, 0.2, 0.5)
-MAT left di 1.5
-MAT right metal (0.8, 0.6, 0.2), 0.2
+MAT_DIFF ground (0.8, 0.8, 0.8)
+MAT_DIFF center (0.1, 0.2, 0.5)
+MAT_DI left 1.5
+MAT_METAL right (0.8, 0.6, 0.2), 0.2
 
 # objects
 SPHERE ground (0, -100.5, -1), 100
