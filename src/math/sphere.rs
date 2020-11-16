@@ -24,7 +24,12 @@ where
     }
 }
 
-impl<'a, Mat: Material> HitRay<'a, Mat> for Sphere<'a, Mat> {
+impl<'a, Mat> HitRay<'a> for Sphere<'a, Mat>
+where
+    Mat: Material,
+{
+    type Mat = Mat;
+
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, &'a Mat)> {
         let oc = ray.orig - self.center;
         let a = ray.dir.length_squared();

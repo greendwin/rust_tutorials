@@ -27,11 +27,10 @@ impl Hit {
     }
 }
 
-pub trait HitRay<'a, Mat>
-where
-    Mat: Material,
-{
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, &'a Mat)>;
+pub trait HitRay<'a> {
+    type Mat: Material;
+
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, &'a Self::Mat)>;
 }
 
 #[derive(Debug, Clone)]

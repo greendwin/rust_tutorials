@@ -21,13 +21,11 @@ impl Renderer {
         }
     }
 
-    pub fn render<'a, Mat>(
-        &self,
-        camera: &Camera,
-        scene: &impl HitRay<'a, Mat>,
-        target: &mut impl RenderTarget,
-    ) where
+    pub fn render<'a, Mat, Scn, Target>(&self, camera: &Camera, scene: &Scn, target: &mut Target)
+    where
         Mat: Material + 'a,
+        Scn: HitRay<'a, Mat = Mat>,
+        Target: RenderTarget,
     {
         let mut prev_progress = -1;
 
@@ -59,17 +57,18 @@ impl Renderer {
     }
 }
 
-fn ray_color<'a, Mat>(ray: &Ray, hittable: &impl HitRay<'a, Mat>, depth: i32) -> Vec3
+fn ray_color<'a, Mat, Scn>(ray: &Ray, scene: &Scn, depth: i32) -> Vec3
 where
     Mat: Material + 'a,
+    Scn: HitRay<'a, Mat = Mat>,
 {
     if depth <= 0 {
         return Vec3::zero();
     }
 
-    if let Some((hit, mat)) = hittable.hit(ray, 0.001, f64::MAX) {
+    if let Some((hit, mat)) = scene.hit(ray, 0.001, f64::MAX) {
         if let Some((next_ray, color)) = mat.scatter(&ray, &hit) {
-            return color * ray_color(&next_ray, hittable, depth - 1);
+            return color * ray_color(&next_ray, scene, depth - 1);
         }
 
         return Vec3::zero();

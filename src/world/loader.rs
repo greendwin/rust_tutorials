@@ -346,16 +346,19 @@ mod test {
         assert_eq!(Vec3::new(0, 1, 0), loader.cam_up());
         assert_eq!(45.0, loader.cam_fov());
     }
+
     #[test]
     fn create_diff_material() {
         let text = "
             MAT_DIFF white 1 1 1
         ";
 
-        let _loader = Loader::from_str(text).expect("no errors");
+        let loader = Loader::from_str(text).expect("no errors");
 
-        // TODO: check DiffuseMat
-        // assert!(loader.get_mat("white").is_some());
+        match loader.get_mat("white") {
+            SomeMaterial::Diff(_) => (),
+            mat => panic!("wrong material {:?}", mat),
+        }
     }
 
     #[test]
@@ -364,10 +367,12 @@ mod test {
             MAT_DI water 1.5
         ";
 
-        let _loader = Loader::from_str(text).expect("no errors");
+        let loader = Loader::from_str(text).expect("no errors");
 
-        // TODO: check DielectricMat
-        // assert!(loader.get_mat("water").is_some());
+        match loader.get_mat("water") {
+            SomeMaterial::Di(_) => (),
+            mat => panic!("wrong material {:?}", mat),
+        }
     }
 
     #[test]
@@ -376,11 +381,11 @@ mod test {
             MAT_METAL block (0.2, 0.3, 0.4) 0.5
         ";
 
-        let _loader = Loader::from_str(text).expect("no errors");
+        let loader = Loader::from_str(text).expect("no errors");
 
-        // TODO: check MetalMat
-        // assert!(loader.get_mat("block").is_some());
+        match loader.get_mat("block") {
+            SomeMaterial::Metal(_) => (),
+            mat => panic!("wrong material {:?}", mat),
+        }
     }
 }
-
-// TODO: remove `dyn Material` in favor of AnyMaterial enum
