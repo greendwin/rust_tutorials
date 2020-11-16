@@ -1,17 +1,21 @@
-use std::rc::Rc;
-
-use super::material::MaterialPtr;
+use super::material::Material;
 use super::ray::{Hit, HitRay, Ray};
 use super::vec3::Vec3;
 
-pub struct Sphere {
+pub struct Sphere<'a, Mat>
+where
+    Mat: Material,
+{
     pub center: Vec3,
     pub radius: f64,
-    pub material: MaterialPtr,
+    pub material: &'a Mat,
 }
 
-impl Sphere {
-    pub fn new(center: impl Into<Vec3>, radius: impl Into<f64>, material: MaterialPtr) -> Self {
+impl<'a, Mat> Sphere<'a, Mat>
+where
+    Mat: Material,
+{
+    pub fn new(center: impl Into<Vec3>, radius: impl Into<f64>, material: &'a Mat) -> Self {
         Self {
             center: center.into(),
             radius: radius.into(),
@@ -20,8 +24,8 @@ impl Sphere {
     }
 }
 
-impl HitRay for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, MaterialPtr)> {
+impl<'a, Mat: Material> HitRay<'a, Mat> for Sphere<'a, Mat> {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, &'a Mat)> {
         let oc = ray.orig - self.center;
         let a = ray.dir.length_squared();
         let half_b = oc.dot(ray.dir);
@@ -47,11 +51,6 @@ impl HitRay for Sphere {
         let pt = ray.at(t);
         let outward_norm = (pt - self.center) / self.radius;
 
-        Some((
-            Hit::new(ray, t, pt, outward_norm),
-            Rc::clone(&self.material),
-        ))
+        Some((Hit::new(ray, t, pt, outward_norm), self.material))
     }
 }
-
-// TODO: test me!

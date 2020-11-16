@@ -1,18 +1,17 @@
-use std::rc::Rc;
-
 use crate::math::*;
 use crate::utils::*;
 use crate::world::methods::*;
 
+#[derive(Debug, Clone)]
 pub struct DielectricMat {
     ir: f64,
 }
 
 impl DielectricMat {
-    pub fn new(index_of_refraction: f64) -> Rc<Self> {
-        Rc::new(Self {
+    pub fn new(index_of_refraction: f64) -> Self {
+        Self {
             ir: index_of_refraction,
-        })
+        }
     }
 }
 

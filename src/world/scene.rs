@@ -1,23 +1,23 @@
 use crate::math::*;
 
-pub struct Scene {
-    objects: Vec<Box<dyn HitRay>>,
+pub struct Scene<'a, Mat: Material> {
+    objects: Vec<Box<dyn HitRay<'a, Mat> + 'a>>,
 }
 
-impl Scene {
+impl<'a, Mat: Material> Scene<'a, Mat> {
     pub fn new() -> Self {
         Self {
             objects: Vec::new(),
         }
     }
 
-    pub fn add(&mut self, obj: impl HitRay + 'static) {
+    pub fn add(&mut self, obj: impl HitRay<'a, Mat> + 'a) {
         self.objects.push(Box::new(obj));
     }
 }
 
-impl HitRay for Scene {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, MaterialPtr)> {
+impl<'a, 'b, Mat: Material> HitRay<'a, Mat> for Scene<'a, Mat> {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, &'a Mat)> {
         let mut closest_hit = None;
         let mut cur_t_max = t_max;
 

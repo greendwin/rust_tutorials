@@ -1,8 +1,7 @@
 use std::collections::HashMap;
-use std::rc::Rc;
 
 use crate::bitmap::Bitmap;
-use crate::math::{MaterialPtr, Vec3};
+use crate::math::Vec3;
 
 use super::camera::Camera;
 use super::loader_error::*;
@@ -24,8 +23,8 @@ pub struct Loader {
     cam_fov: Option<f64>,
 
     // world
-    default_mat: MaterialPtr,
-    materials: HashMap<String, MaterialPtr>,
+    default_mat: SomeMaterial,
+    materials: HashMap<String, SomeMaterial>,
 }
 
 impl Loader {
@@ -43,7 +42,7 @@ impl Loader {
             cam_fov: None,
 
             // world
-            default_mat: DiffuseMat::new((1, 0, 0)),
+            default_mat: DiffuseMat::new((1, 0, 0)).into(),
             materials: HashMap::new(),
         }
     }
@@ -84,9 +83,8 @@ impl Loader {
         self.cam_fov.unwrap_or(90.0)
     }
 
-    pub fn get_mat(&self, name: &str) -> MaterialPtr {
-        let r = self.materials.get(name).unwrap_or(&self.default_mat);
-        Rc::clone(r)
+    pub fn get_mat(&self, name: &str) -> &SomeMaterial {
+        self.materials.get(name).unwrap_or(&self.default_mat)
     }
 
     pub fn new_image(&self) -> Bitmap {
@@ -207,17 +205,17 @@ impl Loader {
                 "MAT_DIFF" => {
                     let (name, r, g, b) = parse_args!(str, f64, f64, f64);
                     self.materials
-                        .insert(name.clone(), DiffuseMat::new((r, g, b)));
+                        .insert(name.clone(), DiffuseMat::new((r, g, b)).into());
                 }
                 "MAT_DI" => {
                     let (name, index_of_refraction) = parse_args!(str, f64);
                     self.materials
-                        .insert(name.clone(), DielectricMat::new(index_of_refraction));
+                        .insert(name.clone(), DielectricMat::new(index_of_refraction).into());
                 }
                 "MAT_METAL" => {
                     let (name, r, g, b, fuzz) = parse_args!(str, f64, f64, f64, f64);
                     self.materials
-                        .insert(name.clone(), MetalMat::new((r, g, b), fuzz));
+                        .insert(name.clone(), MetalMat::new((r, g, b), fuzz).into());
                 }
                 _ => panic!("uncovered command: {:?}", command),
             }

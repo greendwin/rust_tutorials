@@ -1,17 +1,16 @@
-use std::rc::Rc;
-
 use crate::math::*;
 use crate::utils::*;
 
+#[derive(Debug, Clone)]
 pub struct DiffuseMat {
     albedo: Vec3,
 }
 
 impl DiffuseMat {
-    pub fn new(albedo: impl Into<Vec3>) -> Rc<Self> {
-        Rc::new(Self {
+    pub fn new(albedo: impl Into<Vec3>) -> Self {
+        Self {
             albedo: albedo.into(),
-        })
+        }
     }
 }
 

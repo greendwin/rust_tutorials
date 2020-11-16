@@ -1,20 +1,19 @@
-use std::rc::Rc;
-
 use crate::math::*;
 use crate::utils::*;
 use crate::world::methods::*;
 
+#[derive(Debug, Clone)]
 pub struct MetalMat {
     albedo: Vec3,
     fuzz: f64,
 }
 
 impl MetalMat {
-    pub fn new(albedo: impl Into<Vec3>, fuzz: impl Into<f64>) -> Rc<Self> {
-        Rc::new(Self {
+    pub fn new(albedo: impl Into<Vec3>, fuzz: impl Into<f64>) -> Self {
+        Self {
             albedo: albedo.into(),
             fuzz: fuzz.into().min(1.0),
-        })
+        }
     }
 }
 
