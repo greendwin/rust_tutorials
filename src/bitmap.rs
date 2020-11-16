@@ -4,7 +4,6 @@ use std::io::{self, BufWriter};
 use std::mem;
 use std::path::Path;
 
-use crate::math::*;
 use crate::utils::*;
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Copy, Clone, Debug)]
@@ -36,30 +35,6 @@ impl Color {
 
     pub fn blue() -> Self {
         Self::new(0, 0, u8::MAX)
-    }
-}
-
-pub fn lerp_ratio_to_u8(v: f64) -> u8 {
-    (256.0 * clamp(v, 0.0, 0.99999)) as u8
-}
-
-impl From<Vec3> for Color {
-    fn from(col: Vec3) -> Self {
-        Color::new(
-            lerp_ratio_to_u8(col.x),
-            lerp_ratio_to_u8(col.y),
-            lerp_ratio_to_u8(col.z),
-        )
-    }
-}
-
-impl<T: Into<f64>> From<(T, T, T)> for Color {
-    fn from(col: (T, T, T)) -> Self {
-        Color::new(
-            lerp_ratio_to_u8(col.0.into()),
-            lerp_ratio_to_u8(col.1.into()),
-            lerp_ratio_to_u8(col.2.into()),
-        )
     }
 }
 

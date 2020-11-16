@@ -1,3 +1,6 @@
+#[macro_use]
+mod vec_str;
+
 mod random;
 mod raw_view;
 

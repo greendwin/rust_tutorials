@@ -12,7 +12,7 @@ CAM_FOV=45
 # materials
 MAT ground diff (0.8, 0.8, 0.8)
 MAT center diff (0.1, 0.2, 0.5)
-MAT left dielect 1.5
+MAT left di 1.5
 MAT right metal (0.8, 0.6, 0.2), 0.2
 
 # objects
