@@ -4,15 +4,15 @@
 IMG 1024 768
 SAMPLES: 500
 
-# ?? sec
+# 459 sec
 IMG 640 480
 SAMPLES: 100
 
-# 105 sec
+# 105 sec -> 28 sec
 IMG 320 240
 SAMPLES: 25
 
-# 35 sec
+# 35 sec -> 10 sec
 #IMG 240 180
 #SAMPLES: 15
 

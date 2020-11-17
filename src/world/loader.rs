@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::bitmap::Bitmap;
 use crate::math::{HitRay, Sphere, Vec3};
@@ -156,30 +157,31 @@ impl Loader {
     }
 
     pub fn new_scene(&self) -> Scene<SomeObject> {
-        let mut r = Scene::new();
+        let mut scene = Scene::new();
 
         for obj in &self.objs {
-            r.add(obj.clone());
+            scene.add(obj.clone());
         }
 
-        return r;
+        scene
     }
 
     pub fn new_renderer<'a, Scene, Target>(
         &self,
+        scene: Arc<Scene>,
         camera: &'a Camera,
-        scene: &'a Scene,
         target: &'a mut Target,
     ) -> Renderer<'a, Scene, Target>
     where
         Scene: HitRay,
+        Scene: Sync + Send + 'static,
         Target: RenderTarget,
     {
         Renderer::new(
             self.samples_per_pixel(),
             self.max_depth(),
-            camera,
             scene,
+            camera,
             target,
         )
     }

@@ -8,7 +8,6 @@ use rust_ray::world::*;
 
 use RenderProgress::*;
 
-// const SCENE_DECL: &str = include_str!("../scene_example.txt");
 const SCENE_DECL: &str = include_str!("../random_scene.txt");
 
 type SomeScene = Scene<SomeObject>;
@@ -60,7 +59,7 @@ fn random_scene(loader: &Loader) -> SomeScene {
     random_gen(&mut scene, 10, 1.0, 0.2, (7.0, 2.0, 1.0));
     random_gen(&mut scene, 20, 0.5, 0.05, (5.0, 3.0, 2.0));
 
-    return scene;
+    scene
 }
 
 fn main() {
@@ -72,7 +71,7 @@ fn main() {
 
     let start_time = Instant::now();
 
-    let mut renderer = loader.new_renderer(&camera, &scene, &mut image);
+    let mut renderer = loader.new_renderer(scene.into(), &camera, &mut image);
     let mut prev_progress = 0;
     let mut prev_save = start_time;
     while let InProgress(progress) = renderer.next() {
@@ -114,10 +113,6 @@ fn main() {
 }
 
 // TODO:
-//   render iteration:
-//      - [nope] randomize pixels order for better preview
-//      - [done] add estimate time
-//      - [done] preview image on each sample
 //   rendering performance:
-//      - render pixels multiple threads
+//      - [done] render pixels in multiple threads
 //      - add voxels for objects collection

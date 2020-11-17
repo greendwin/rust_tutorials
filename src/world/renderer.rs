@@ -1,3 +1,7 @@
+use std::sync::Arc;
+
+use num_cpus;
+
 use super::camera::Camera;
 use crate::math::*;
 use crate::utils::*;
@@ -15,15 +19,22 @@ pub enum RenderProgress {
 
 use RenderProgress::*;
 
+struct JobResult {
+    x: usize,
+    y: usize,
+    color: Vec3,
+}
+
 pub struct Renderer<'a, Scene, Target> {
     samples_per_pixel: usize,
     max_depth: usize,
 
+    scene: Arc<Scene>,
     camera: &'a Camera,
-    scene: &'a Scene,
     target: &'a mut Target,
 
     // iteration data
+    jobs: JobRunner<JobResult>,
     cur_y: usize,
     cur_samples: usize,
     accum_colors: Vec<Vec3>,
@@ -32,13 +43,14 @@ pub struct Renderer<'a, Scene, Target> {
 impl<'a, Scene, Target> Renderer<'a, Scene, Target>
 where
     Scene: HitRay,
+    Scene: Sync + Send + 'static,
     Target: RenderTarget,
 {
     pub fn new(
         samples_per_pixel: usize,
         max_depth: usize,
+        scene: Arc<Scene>,
         camera: &'a Camera,
-        scene: &'a Scene,
         target: &'a mut Target,
     ) -> Self {
         let num_pixels = target.width() * target.height();
@@ -46,11 +58,12 @@ where
         Self {
             samples_per_pixel,
             max_depth,
-            camera,
             scene,
+            camera,
             target,
 
             // iteration
+            jobs: JobRunner::new(num_cpus::get()),
             cur_y: 0,
             cur_samples: 0,
             accum_colors: vec![Vec3::zero(); num_pixels],
@@ -71,8 +84,9 @@ where
             self.cur_samples,
             &mut self.accum_colors,
             self.max_depth,
+            &mut self.jobs,
             self.camera,
-            self.scene,
+            Arc::clone(&self.scene),
             self.target,
         );
 
@@ -90,31 +104,43 @@ where
     }
 }
 
-fn render_next(
-    y: usize,
+fn render_next<Scene, Target>(
+    cur_y: usize,
     cur_samples: usize,
     accum_colors: &mut [Vec3],
     max_depth: usize,
+    jobs: &mut JobRunner<JobResult>,
     camera: &Camera,
-    scene: &impl HitRay,
-    target: &mut impl RenderTarget,
-) {
+    scene: Arc<Scene>,
+    target: &mut Target,
+) where
+    Scene: HitRay,
+    Scene: Sync + Send + 'static,
+    Target: RenderTarget,
+{
     let u_last = (target.width() - 1) as f64;
     let v_last = (target.height() - 1) as f64;
 
     for x in 0..target.width() {
-        let accum_color = &mut accum_colors[y * target.width() + x];
-
-        let x = x as f64;
-        let y = y as f64;
-        let u = inv_lerp(x + random(), 0.0, u_last);
-        let v = inv_lerp(y + random(), 0.0, v_last);
+        let u = inv_lerp(x as f64 + random(), 0.0, u_last);
+        let v = inv_lerp(cur_y as f64 + random(), 0.0, v_last);
         let ray = camera.get_ray(u, v);
 
-        *accum_color += ray_color(&ray, scene, max_depth as i32);
+        let scene = Arc::clone(&scene);
+
+        jobs.add_job(move || {
+            let color = ray_color(&ray, &*scene, max_depth as i32);
+
+            JobResult { x, y: cur_y, color }
+        });
+    }
+
+    while let Some(r) = jobs.get_result() {
+        let accum_color = &mut accum_colors[r.y * target.width() + r.x];
+        *accum_color += r.color;
 
         let color = (*accum_color / (cur_samples + 1) as f64).sqrt();
-        target.set_pixel(x as usize, y as usize, color);
+        target.set_pixel(r.x, r.y, color);
     }
 }
 
