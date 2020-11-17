@@ -1,0 +1,25 @@
+# image
+IMG 1024 768
+# IMG 300 200
+SAMPLES: 500
+# SAMPLES: 25
+
+# camera
+CAM_POS: 13, 2, 3
+CAM_LOOKAT: 0, 0, 0
+FOV=20
+FOCUS=10
+APERTURE: 0.1
+
+# materials
+MAT_DIFF ground 0.5, 0.5, 0.5
+MAT_DI glass 1.5
+MAT_DIFF baloon (0.4, 0.2, 0.1)
+MAT_METAL metal (0.7, 0.6, 0.5), 0
+
+# objects
+SPHERE ground (0, -1000, 0), 1000
+SPHERE glass (0, 1, 0), 1
+SPHERE glass (0, 1, 0), -0.95
+SPHERE baloon (-4, 1, 0), 1
+SPHERE metal (4, 1, 0), 1

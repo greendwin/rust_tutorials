@@ -25,6 +25,7 @@ pub struct Loader {
     cam_up: Option<Vec3>,
     cam_fov: Option<f64>,
     cam_aperture: Option<f64>,
+    cam_focus: Option<f64>,
 
     // world
     materials: HashMap<String, SomeMaterial>,
@@ -81,6 +82,7 @@ impl Loader {
             cam_up: None,
             cam_fov: None,
             cam_aperture: None,
+            cam_focus: None,
 
             // world
             materials: HashMap::new(),
@@ -128,6 +130,11 @@ impl Loader {
         self.cam_aperture.unwrap_or(0.0)
     }
 
+    pub fn cam_focus(&self) -> f64 {
+        self.cam_focus
+            .unwrap_or((self.cam_lookat() - self.cam_pos()).length())
+    }
+
     pub fn get_mat(&self, name: &str) -> Option<&SomeMaterial> {
         self.materials.get(name)
     }
@@ -144,7 +151,7 @@ impl Loader {
             self.cam_fov(),
             self.aspect_ratio(),
             self.cam_aperture(),
-            (self.cam_lookat() - self.cam_pos()).length(),
+            self.cam_focus(),
         )
     }
 
@@ -205,6 +212,9 @@ impl Loader {
                 }
                 "APERTURE" => {
                     self.cam_aperture.replace(parse_args!(command, line, (f64)));
+                }
+                "FOCUS" => {
+                    self.cam_focus.replace(parse_args!(command, line, (f64)));
                 }
                 "MAT_DIFF" => {
                     let (name, r, g, b) = parse_args!(command, line, (str, f64, f64, f64));
@@ -341,6 +351,17 @@ mod test {
         let loader = Loader::from_str(text).expect("no errors");
 
         assert_eq!(loader.cam_aperture(), 2.0);
+    }
+
+    #[test]
+    fn cam_focus() {
+        let text = "
+            FOCUS=42
+        ";
+
+        let loader = Loader::from_str(text).expect("no errors");
+
+        assert_eq!(loader.cam_focus(), 42.0);
     }
 
     #[test]
