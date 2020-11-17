@@ -1,8 +1,12 @@
 // url: https://raytracing.github.io/books/RayTracingInOneWeekend.html
 
+use std::time::Instant;
+
 use rust_ray::math::*;
 use rust_ray::utils::*;
 use rust_ray::world::*;
+
+use RenderProgress::*;
 
 // const SCENE_DECL: &str = include_str!("../scene_example.txt");
 const SCENE_DECL: &str = include_str!("../random_scene.txt");
@@ -24,7 +28,7 @@ fn random_gen(
             let choose_mat = rand_range(0, total_weight);
             let center = Vec3::new(
                 step * (a as f64 + (1.0 - radius) * random()),
-                radius - 0.1,
+                radius - 0.01,
                 step * (b as f64 + (1.0 - radius) * random()),
             );
 
@@ -64,23 +68,46 @@ fn main() {
 
     let mut image = loader.new_image();
     let camera = loader.new_camera();
-    let rend = loader.new_renderer();
-
     let scene = random_scene(&loader);
 
-    rend.render(&camera, &scene, &mut image);
+    let start_time = Instant::now();
 
-    println!("saving 'output.bmp'...");
+    let mut renderer = loader.new_renderer(&camera, &scene, &mut image);
+    let mut prev_progress = usize::MAX;
+    let mut prev_save = start_time;
+    while let InProgress(progress) = renderer.next() {
+        if prev_progress != progress {
+            println!("{}%", progress);
+            prev_progress = progress;
+        }
+
+        // flush intermediate results each 5 seconds
+        let cur_time = Instant::now();
+        let since_last_save = cur_time.duration_since(prev_save);
+        if since_last_save.as_secs() >= 5 {
+            renderer.target_mut().save("output.bmp").expect("save file");
+            prev_save = cur_time;
+        }
+    }
+
+    // save final result
     image.save("output.bmp").expect("save file");
+
+    let total_time = Instant::now().duration_since(start_time);
+    println!(
+        "total time: {:.1} min ({} sec)",
+        total_time.as_secs_f32() / 60.0,
+        total_time.as_secs()
+    );
 
     println!("done.");
 }
 
 // TODO:
 //   render iteration:
-//      - move logging out to iterator
-//      - print total time
-//      - save intermediate results for preview
+//      - [done] move logging out to iterator
+//      - [done] print total time
+//      - [done] save intermediate results for preview
 //      - randomize pixels order for better preview
 //   rendering performance:
 //      - render pixels multiple threads

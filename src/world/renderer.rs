@@ -8,47 +8,102 @@ pub trait RenderTarget {
     fn set_pixel(&mut self, x: usize, y: usize, color: Vec3);
 }
 
-pub struct Renderer {
-    samples_per_pixel: usize,
-    max_depth: usize,
+pub enum RenderProgress {
+    InProgress(usize), // percents
+    Done,
 }
 
-impl Renderer {
-    pub fn new(samples_per_pixel: usize, max_depth: usize) -> Self {
+use RenderProgress::*;
+
+pub struct Renderer<'a, Scene, Target> {
+    samples_per_pixel: usize,
+    max_depth: usize,
+
+    camera: &'a Camera,
+    scene: &'a Scene,
+    target: &'a mut Target,
+
+    // iteration data
+    cur_y: usize,
+}
+
+impl<'a, Scene, Target> Renderer<'a, Scene, Target>
+where
+    Scene: HitRay,
+    Target: RenderTarget,
+{
+    pub fn new(
+        samples_per_pixel: usize,
+        max_depth: usize,
+        camera: &'a Camera,
+        scene: &'a Scene,
+        target: &'a mut Target,
+    ) -> Self {
+        let init_y = target.height() - 1;
         Self {
             samples_per_pixel,
             max_depth,
+            camera,
+            scene,
+            target,
+            cur_y: init_y,
         }
     }
 
-    pub fn render(&self, camera: &Camera, scene: &impl HitRay, target: &mut impl RenderTarget) {
-        let mut prev_progress = -1;
+    pub fn target_mut(&mut self) -> &mut Target {
+        &mut self.target
+    }
 
-        let r_height = target.height() as f64;
-        let r_width = target.width() as f64;
-
-        for y in 0..target.height() {
-            let y_ratio = inv_lerp(y as f64, 0.0, r_height - 1.0);
-            let progress = (100.0 * y_ratio) as i32;
-            if progress > prev_progress {
-                println!("{}%", progress);
-                prev_progress = progress;
-            }
-            for x in 0..target.width() {
-                let mut accum_color = Vec3::zero();
-                for _ in 0..self.samples_per_pixel {
-                    let x = x as f64;
-                    let y = y as f64;
-                    let u = inv_lerp(x + random(), 0.0, r_width - 1.0);
-                    let v = inv_lerp(y + random(), 0.0, r_height - 1.0);
-                    let ray = camera.get_ray(u, v);
-                    accum_color += ray_color(&ray, scene, self.max_depth as i32);
-                }
-
-                let color = (accum_color / self.samples_per_pixel as f64).sqrt();
-                target.set_pixel(x, y, color);
-            }
+    pub fn next(&mut self) -> RenderProgress {
+        if self.cur_y == usize::MAX {
+            return Done;
         }
+
+        render_next(
+            self.cur_y,
+            self.samples_per_pixel,
+            self.max_depth,
+            self.camera,
+            self.scene,
+            self.target,
+        );
+
+        if self.cur_y == 0 {
+            self.cur_y = usize::MAX;
+            return InProgress(100);
+        }
+
+        self.cur_y -= 1;
+
+        let y_ratio = inv_lerp(self.cur_y as f64, (self.target.height() - 1) as f64, 0.0);
+        RenderProgress::InProgress((y_ratio * 100.0).round() as usize)
+    }
+}
+
+fn render_next(
+    y: usize,
+    samples_per_pixel: usize,
+    max_depth: usize,
+    camera: &Camera,
+    scene: &impl HitRay,
+    target: &mut impl RenderTarget,
+) {
+    let u_last = (target.width() - 1) as f64;
+    let v_last = (target.height() - 1) as f64;
+
+    for x in 0..target.width() {
+        let mut accum_color = Vec3::zero();
+        for _ in 0..samples_per_pixel {
+            let x = x as f64;
+            let y = y as f64;
+            let u = inv_lerp(x + random(), 0.0, u_last);
+            let v = inv_lerp(y + random(), 0.0, v_last);
+            let ray = camera.get_ray(u, v);
+            accum_color += ray_color(&ray, scene, max_depth as i32);
+        }
+
+        let color = (accum_color / samples_per_pixel as f64).sqrt();
+        target.set_pixel(x, y, color);
     }
 }
 

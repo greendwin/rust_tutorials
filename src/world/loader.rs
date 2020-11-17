@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 use crate::bitmap::Bitmap;
-use crate::math::{Sphere, Vec3};
+use crate::math::{HitRay, Sphere, Vec3};
 
 use super::camera::Camera;
 use super::loader_error::*;
 use super::materials::*;
-use super::renderer::Renderer;
+use super::renderer::{RenderTarget, Renderer};
 use super::scene::Scene;
 use super::some_object::SomeObject;
 
@@ -165,8 +165,23 @@ impl Loader {
         return r;
     }
 
-    pub fn new_renderer(&self) -> Renderer {
-        Renderer::new(self.samples_per_pixel(), self.max_depth())
+    pub fn new_renderer<'a, Scene, Target>(
+        &self,
+        camera: &'a Camera,
+        scene: &'a Scene,
+        target: &'a mut Target,
+    ) -> Renderer<'a, Scene, Target>
+    where
+        Scene: HitRay,
+        Target: RenderTarget,
+    {
+        Renderer::new(
+            self.samples_per_pixel(),
+            self.max_depth(),
+            camera,
+            scene,
+            target,
+        )
     }
 
     pub fn from_str(text: &str) -> LoaderResult<Self> {

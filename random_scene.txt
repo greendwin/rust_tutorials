@@ -1,8 +1,16 @@
 # image
+
+# > hour
 IMG 1024 768
-IMG 320 240
 SAMPLES: 500
-SAMPLES: 200
+
+# 100 sec
+IMG 320 240
+SAMPLES: 25
+
+# 35 sec
+#IMG 240 180
+#SAMPLES: 15
 
 # camera
 CAM_POS: 13, 2, 3
@@ -10,7 +18,7 @@ CAM_LOOKAT: 0, 0, 0
 FOV=20
 FOCUS=10
 APERTURE=0.1
-APERTURE=0
+#APERTURE=0
 
 # materials
 MAT_DIFF ground 0.5, 0.5, 0.5
