@@ -9,8 +9,8 @@ impl<Obj> Scene<Obj> {
         Self { objs: Vec::new() }
     }
 
-    pub fn add(&mut self, obj: Obj) {
-        self.objs.push(obj);
+    pub fn add(&mut self, obj: impl Into<Obj>) {
+        self.objs.push(obj.into());
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::math::*;
 use crate::utils::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct DiffuseMat {
     pub albedo: Vec3,
 }

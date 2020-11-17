@@ -4,7 +4,7 @@ use super::dielectric::DielectricMat;
 use super::diffuse::DiffuseMat;
 use super::metal::MetalMat;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum SomeMaterial {
     Diff(DiffuseMat),
     Metal(MetalMat),

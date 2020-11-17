@@ -16,11 +16,11 @@ impl<'a, Mat> Sphere<Mat>
 where
     Mat: Material,
 {
-    pub fn new(center: impl Into<Vec3>, radius: impl Into<f64>, material: Mat) -> Self {
+    pub fn new(center: impl Into<Vec3>, radius: impl Into<f64>, material: impl Into<Mat>) -> Self {
         Self {
             center: center.into(),
             radius: radius.into(),
-            material,
+            material: material.into(),
         }
     }
 }

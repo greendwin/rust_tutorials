@@ -2,7 +2,7 @@ use crate::math::*;
 use crate::utils::*;
 use crate::world::methods::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct MetalMat {
     pub albedo: Vec3,
     pub fuzz: f64,
