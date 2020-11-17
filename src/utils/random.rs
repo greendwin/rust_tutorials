@@ -25,7 +25,6 @@ pub fn rand_vec3(min: impl Into<f64>, max: impl Into<f64>) -> Vec3 {
     )
 }
 
-#[inline]
 pub fn rand_vec3_in_unit_sphere() -> Vec3 {
     loop {
         let r = rand_vec3(-1, 1);
@@ -42,4 +41,8 @@ pub fn rand_vec3_in_hemisphere(norm: Vec3) -> Vec3 {
     } else {
         -r
     }
+}
+
+pub fn rand_shuffle<T>(lst: &mut [T]) {
+    lst.shuffle(&mut rand::thread_rng());
 }

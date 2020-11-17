@@ -73,16 +73,26 @@ fn main() {
     let start_time = Instant::now();
 
     let mut renderer = loader.new_renderer(&camera, &scene, &mut image);
-    let mut prev_progress = usize::MAX;
+    let mut prev_progress = 0;
     let mut prev_save = start_time;
     while let InProgress(progress) = renderer.next() {
+        let cur_time = Instant::now();
+
         if prev_progress != progress {
-            println!("{}%", progress);
+            let since_start = cur_time.duration_since(start_time);
+
+            let estimate_sec =
+                (100 - progress) as f64 / progress as f64 * since_start.as_secs_f64();
+
+            if estimate_sec > 60.0 {
+                println!("{}%, est {:.2} min", progress, estimate_sec / 60.0);
+            } else {
+                println!("{}%, est {:.0} sec", progress, estimate_sec);
+            }
             prev_progress = progress;
         }
 
         // flush intermediate results each 5 seconds
-        let cur_time = Instant::now();
         let since_last_save = cur_time.duration_since(prev_save);
         if since_last_save.as_secs() >= 5 {
             renderer.target_mut().save("output.bmp").expect("save file");
@@ -105,10 +115,9 @@ fn main() {
 
 // TODO:
 //   render iteration:
-//      - [done] move logging out to iterator
-//      - [done] print total time
-//      - [done] save intermediate results for preview
-//      - randomize pixels order for better preview
+//      - [nope] randomize pixels order for better preview
+//      - [done] add estimate time
+//      - [done] preview image on each sample
 //   rendering performance:
 //      - render pixels multiple threads
 //      - add voxels for objects collection

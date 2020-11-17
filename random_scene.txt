@@ -4,7 +4,11 @@
 IMG 1024 768
 SAMPLES: 500
 
-# 100 sec
+# ?? sec
+IMG 640 480
+SAMPLES: 100
+
+# 105 sec
 IMG 320 240
 SAMPLES: 25
 
