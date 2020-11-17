@@ -38,16 +38,16 @@ fn random_gen(
             if choose_mat < diff_weight {
                 let albedo = rand_vec3(0, 1) * rand_vec3(0, 1);
                 let mat = DiffuseMat::new(albedo);
-                scene.add(Sphere::new(center, radius, mat));
+                scene.add(SphereObject::new(center, radius, mat));
             } else if choose_mat < diff_weight + metal_weight {
                 let albedo = rand_vec3(0.5, 1);
                 let fuzz = rand_range(0, 0.5);
                 let mat = MetalMat::new(albedo, fuzz);
-                scene.add(Sphere::new(center, radius, mat));
+                scene.add(SphereObject::new(center, radius, mat));
             } else {
                 let mat = DielectricMat::new(2.0);
-                scene.add(Sphere::new(center, radius, mat));
-                scene.add(Sphere::new(center, -0.9 * radius, mat));
+                scene.add(SphereObject::new(center, radius, mat));
+                scene.add(SphereObject::new(center, -0.9 * radius, mat));
             };
         }
     }

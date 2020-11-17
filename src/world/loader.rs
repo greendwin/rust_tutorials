@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::bitmap::Bitmap;
-use crate::math::{HitRay, Sphere, Vec3};
+use crate::math::{HitRay, Vec3};
 
 use super::camera::Camera;
 use super::loader_error::*;
@@ -10,6 +10,7 @@ use super::materials::*;
 use super::renderer::{RenderTarget, Renderer};
 use super::scene::Scene;
 use super::some_object::SomeObject;
+use super::sphere_object::SphereObject;
 
 use LoaderError::*;
 
@@ -262,7 +263,8 @@ impl Loader {
                         }
                     };
 
-                    self.objs.push(Sphere::new((x, y, z), radius, mat).into());
+                    self.objs
+                        .push(SphereObject::new((x, y, z), radius, mat).into());
                 }
                 _ => {
                     return Err(SyntaxError {
@@ -445,8 +447,8 @@ mod test {
             SomeObject::Sphere(sph) => sph,
         };
 
-        assert_eq!(sphere.center, Vec3::new(1, 2, 3));
-        assert_eq!(sphere.radius, 10.0);
+        assert_eq!(sphere.sphere.center, Vec3::new(1, 2, 3));
+        assert_eq!(sphere.sphere.radius, 10.0);
 
         let mat = match &sphere.material {
             SomeMaterial::Metal(m) => m,

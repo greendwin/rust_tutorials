@@ -1,13 +1,14 @@
 use crate::math::*;
 
 use super::materials::SomeMaterial;
+use super::sphere_object::SphereObject;
 
 #[derive(Debug, Clone)]
 pub enum SomeObject {
-    Sphere(Sphere<SomeMaterial>),
+    Sphere(SphereObject<SomeMaterial>),
 }
 
-type SomeSphere = Sphere<SomeMaterial>;
+type SomeSphere = SphereObject<SomeMaterial>;
 
 impl From<SomeSphere> for SomeObject {
     fn from(sphere: SomeSphere) -> Self {

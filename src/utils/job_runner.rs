@@ -157,18 +157,32 @@ mod test {
 
                 pool.add_job(move || {
                     let lock = mtx.lock().unwrap();
+                    let lock = cond.wait(lock).unwrap();
+
+                    // wait one more time to make sure that it is finished after "seconds"
                     let _ = cond.wait(lock).unwrap();
+
                     "first".to_owned()
                 });
             }
 
-            pool.add_job(move || {
-                let _ = mtx.lock().unwrap();
-                cond.notify_all();
-                "second".to_owned()
-            });
+            {
+                let mtx = Arc::clone(&mtx);
+                let cond = Arc::clone(&cond);
+
+                pool.add_job(move || {
+                    let _ = mtx.lock().unwrap();
+                    cond.notify_all();
+                    "second".to_owned()
+                });
+            }
 
             assert_eq!(Some("second"), pool.get_result().as_deref());
+
+            {
+                let _ = mtx.lock().unwrap();
+                cond.notify_all();
+            }
             assert_eq!(Some("first"), pool.get_result().as_deref());
         })
     }
