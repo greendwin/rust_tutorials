@@ -13,6 +13,8 @@ rand = "0.7.3"
 
 [lib]
 
+[tests]
+
 [[example]]
 name = "hello_ppm"
 
