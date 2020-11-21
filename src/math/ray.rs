@@ -40,7 +40,7 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn new<T: Into<Vec3>>(origin: T, direction: T) -> Self {
+    pub fn new(origin: impl Into<Vec3>, direction: impl Into<Vec3>) -> Self {
         Self {
             orig: origin.into(),
             dir: direction.into(),

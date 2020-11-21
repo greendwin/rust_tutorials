@@ -56,20 +56,20 @@ fn random_gen(
 fn random_scene(loader: &Loader) -> SomeScene {
     let mut scene = loader.new_scene();
 
-    random_gen(&mut scene, 10, 1.0, 0.2, (7.0, 2.0, 1.0));
+    random_gen(&mut scene, 11, 1.0, 0.18, (7.0, 2.0, 1.0));
     random_gen(&mut scene, 20, 0.5, 0.05, (5.0, 3.0, 2.0));
 
     scene
 }
 
 fn main() {
+    let start_time = Instant::now();
+
     let loader = Loader::from_str(SCENE_DECL).expect("load scenario");
 
     let mut image = loader.new_image();
     let camera = loader.new_camera();
     let scene = random_scene(&loader);
-
-    let start_time = Instant::now();
 
     let mut renderer = loader.new_renderer(scene.into(), &camera, &mut image);
     let mut prev_progress = 0;

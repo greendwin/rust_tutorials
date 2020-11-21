@@ -79,6 +79,7 @@ impl VoxelGrid {
     pub fn voxel_objs(&self, index: VoxelIndex) -> &[u32] {
         let (x, y, z) = index.as_tuple();
         let index = x * self.ny * self.nz + y * self.nz + z;
+
         let p = self.cells[index];
 
         &self.objs[p.offset as usize..(p.offset + p.count) as usize]
@@ -93,7 +94,7 @@ impl VoxelGrid {
         found.clear();
 
         let mut cur = match self.voxel_index(ray.orig) {
-            None => panic!("ray starting point is out of the voxel grid"),
+            None => return,
             Some(p) => p,
         };
 
@@ -111,10 +112,26 @@ impl VoxelGrid {
                 Some(p) => p,
             };
 
+            if next == cur {
+                cur_pos = next_pos;
+                cur = next;
+                continue;
+            }
+
             let mut neighbours = [VoxelIndex::zero(); 9];
             let count = get_neighbours(cur, next, &mut neighbours);
 
             for &cell_idx in &neighbours[0..count] {
+                if cell_idx.0 < 0 || cell_idx.1 < 0 || cell_idx.2 < 0 {
+                    continue;
+                }
+                if cell_idx.0 >= self.nx as i32
+                    || cell_idx.1 >= self.ny as i32
+                    || cell_idx.2 >= self.nz as i32
+                {
+                    continue;
+                }
+
                 for &p in self.voxel_objs(cell_idx) {
                     found.insert(p as usize);
                 }
@@ -128,7 +145,9 @@ impl VoxelGrid {
 
 #[inline]
 fn voxel_offset(idx: VoxelIndex, dims: &(usize, usize, usize)) -> usize {
-    idx.0 as usize * dims.1 * dims.2 + idx.1 as usize * dims.2 + idx.2 as usize
+    let VoxelIndex(x, y, z) = idx;
+    let (_nx, ny, nz) = dims;
+    x as usize * ny * nz + y as usize * nz + z as usize
 }
 
 fn voxel_index(pos: Vec3, bounds: &AABB, voxel_size: f64) -> Option<VoxelIndex> {
@@ -189,8 +208,8 @@ fn calc_voxel_cells(
         .iter()
         .map(|p| {
             let obj_bounds = bounds.intersect(p)?;
-            let min_index = voxel_index(obj_bounds.min, bounds, voxel_size).unwrap();
-            let max_index = voxel_index(obj_bounds.max - f64::EPSILON, bounds, voxel_size).unwrap();
+            let min_index = voxel_index(obj_bounds.min, bounds, voxel_size)?;
+            let max_index = voxel_index(obj_bounds.max - f64::EPSILON, bounds, voxel_size)?;
             Some((min_index, max_index))
         })
         .collect();
@@ -248,10 +267,3 @@ fn calc_voxel_cells(
 
     (cells, objs)
 }
-
-// TODO:
-//   - assume that ray starting point is in the grid
-//   - collect objs id from voxels intersected by a ray
-//   - include neighbour cells in direction of ray movement
-//   - pass spheres to grid constructor (instead of SizedObj)
-//   - use object index instead of ObjId

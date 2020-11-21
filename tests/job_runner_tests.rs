@@ -27,7 +27,7 @@ fn spawn_threads() {
 
             pool.add_job(move || {
                 let lock = mtx.lock().unwrap();
-                let lock = cond.wait(lock).unwrap();
+                let _ = cond.wait(lock).unwrap();
 
                 "first".to_owned()
             });
