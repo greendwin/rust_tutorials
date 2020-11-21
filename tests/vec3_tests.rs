@@ -130,3 +130,17 @@ fn vec3_norm() {
     assert!((l.y - r.y).abs() <= f64::EPSILON);
     assert!((l.z - r.z).abs() <= f64::EPSILON);
 }
+
+#[test]
+fn vec3_less() {
+    assert!(Vec3::new(0, 0, 0) < Vec3::new(1, 1, 1));
+
+    let x = Vec3::new(0, 2, 0);
+    let y = Vec3::new(1, 1, 1);
+
+    assert_eq!(x.partial_cmp(&y), None);
+
+    assert!(!(x < y));
+    assert!(!(x > y));
+    assert!(!(x == y));
+}
