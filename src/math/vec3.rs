@@ -1,8 +1,9 @@
+use std::cmp::Ordering;
 use std::f64;
 use std::fmt::{self, Display};
 use std::ops::*;
 
-#[derive(Debug, PartialOrd, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -115,6 +116,26 @@ impl Vec3 {
 impl Display for Vec3 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({}, {}, {})", self.x, self.y, self.z)
+    }
+}
+
+impl PartialOrd for Vec3 {
+    fn partial_cmp(&self, other: &Vec3) -> Option<Ordering> {
+        use Ordering::*;
+
+        if self == other {
+            return Some(Equal);
+        }
+
+        if self.x < other.x && self.y < other.y && self.z < other.z {
+            return Some(Less);
+        }
+
+        if self.x > other.x && self.y > other.y && self.z > other.z {
+            return Some(Greater);
+        }
+
+        return None;
     }
 }
 
