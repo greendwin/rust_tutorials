@@ -29,9 +29,6 @@ fn spawn_threads() {
                 let lock = mtx.lock().unwrap();
                 let lock = cond.wait(lock).unwrap();
 
-                // wait one more time to make sure that it is finished after "seconds"
-                let _ = cond.wait(lock).unwrap();
-
                 "first".to_owned()
             });
         }
@@ -47,13 +44,10 @@ fn spawn_threads() {
             });
         }
 
-        assert_eq!(Some("second"), pool.get_result().as_deref());
-
-        {
-            let _ = mtx.lock().unwrap();
-            cond.notify_all();
-        }
-        assert_eq!(Some("first"), pool.get_result().as_deref());
+        let mut res = [pool.get_result(), pool.get_result()];
+        res.sort();
+        assert_eq!(Some("first"), res[0].as_deref());
+        assert_eq!(Some("second"), res[1].as_deref());
     })
 }
 
