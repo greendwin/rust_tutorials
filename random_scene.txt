@@ -1,6 +1,6 @@
 # image
 
-# > hour
+# 111.0 min (6659 sec)
 IMG 1024 768
 SAMPLES: 500
 
