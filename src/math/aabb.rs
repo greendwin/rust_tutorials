@@ -1,3 +1,4 @@
+use super::sphere::Sphere;
 use super::vec3::Vec3;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -72,12 +73,15 @@ impl Default for AABB {
     }
 }
 
-impl<T> From<T> for AABB
-where
-    T: Into<Vec3>,
-{
+impl<T: Into<Vec3>> From<T> for AABB {
     fn from(other: T) -> Self {
         let other = other.into();
         Self::new(other, other)
+    }
+}
+
+impl From<Sphere> for AABB {
+    fn from(other: Sphere) -> Self {
+        Self::new(other.center - other.radius, other.center + other.radius)
     }
 }

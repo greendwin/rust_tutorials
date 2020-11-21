@@ -1,4 +1,4 @@
-use rust_ray::math::{Vec3, AABB};
+use rust_ray::math::{Sphere, Vec3, AABB};
 
 #[test]
 fn create_box() {
@@ -114,4 +114,11 @@ fn from_many() {
     ]);
 
     assert_eq!(x, AABB::new((-10, -3, -3), (4, 4, 4)));
+}
+
+#[test]
+fn from_sphere() {
+    let s = Sphere::new((1, 0, 0), 1);
+
+    assert_eq!(AABB::from(s), AABB::new((0, -1, -1), (2, 1, 1)));
 }
