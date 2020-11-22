@@ -4,13 +4,13 @@
 IMG 1024 768
 SAMPLES: 500
 
-# 459 sec
+# 459 sec (323 sec on PC)
 IMG 640 480
 SAMPLES: 100
 
 # 105 sec -> 28 sec
-IMG 320 240
-SAMPLES: 25
+#IMG 320 240
+#SAMPLES: 25
 
 # 35 sec -> 10 sec
 #IMG 240 180
