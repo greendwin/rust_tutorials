@@ -28,6 +28,10 @@ impl SceneLoader {
 
         scene
     }
+
+    pub fn add_obj(&self, obj: impl Into<SomeObject>) {
+        self.objects.borrow_mut().push(obj.into());
+    }
 }
 
 #[derive(Deserialize)]

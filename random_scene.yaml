@@ -34,3 +34,24 @@ objects:
   - { type: sphere, material: glass, center: [0, 1, 0], radius: -0.95 }
   - { type: sphere, material: baloon, center: [-4, 1, 0], radius: 1 }
   - { type: sphere, material: metal, center: [4, 1, 0], radius: 1 }
+
+rnd_gen:
+  - nx: 20
+    nz: 20
+    step: 1.1
+    sphere_radius: 0.18
+    center: [0, 0.17, 0]
+    materials:
+      - { type: diff, weight: 7.0 }
+      - { type: metal, weight: 2.0 }
+      - { type: glass, weight: 1.0, refraction: 2.0, width: 0.1 }
+
+  - nx: 40
+    nz: 40
+    step: 0.5
+    sphere_radius: 0.07
+    center: [0, 0.06, 0]
+    materials:
+      - { type: diff, weight: 5.0 }
+      - { type: metal, weight: 3.0 }
+      - { type: glass, weight: 2.0, refraction: 2.0, width: 0.1 }
