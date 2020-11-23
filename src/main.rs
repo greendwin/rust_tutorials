@@ -26,9 +26,9 @@ fn random_gen(
         for b in -range..range {
             let choose_mat = rand_range(0, total_weight);
             let center = Vec3::new(
-                step * (a as f64 + (1.0 - radius) * random()),
+                step * a as f64 + (step - radius) * random(),
                 radius - 0.01,
-                step * (b as f64 + (1.0 - radius) * random()),
+                step * b as f64 + (step - radius) * random(),
             );
 
             if (center - Vec3::new(4, radius, 0)).length() <= 0.9 {
