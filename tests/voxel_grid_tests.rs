@@ -52,13 +52,13 @@ fn voxel_objs() {
     let grid = &*GRID;
 
     assert_eq!(grid.voxel_objs(VoxelIndex(0, 0, 0)), [0, 1, 2]);
-    assert_eq!(grid.voxel_objs(VoxelIndex(1, 0, 0)), []);
+    assert_eq!(grid.voxel_objs(VoxelIndex(1, 0, 0)), [0u32; 0]);
 
     assert_eq!(grid.voxel_objs(VoxelIndex(1, 1, 1)), [3, 4]);
     assert_eq!(grid.voxel_objs(VoxelIndex(2, 1, 1)), [3, 4]);
     assert_eq!(grid.voxel_objs(VoxelIndex(4, 2, 2)), [3, 4]);
     assert_eq!(grid.voxel_objs(VoxelIndex(5, 3, 3)), [4]);
-    assert_eq!(grid.voxel_objs(VoxelIndex(5, 4, 3)), []);
+    assert_eq!(grid.voxel_objs(VoxelIndex(5, 4, 3)), [0u32; 0]);
 }
 
 fn trace(pos: impl Into<Vec3>, dir: impl Into<Vec3>) -> Vec<usize> {
