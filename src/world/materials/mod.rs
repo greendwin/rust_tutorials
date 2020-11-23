@@ -1,9 +1,9 @@
-mod dielectric;
-mod diffuse;
-mod metal;
+mod dielectric_mat;
+mod diffuse_mat;
+mod metal_mat;
 mod some_material;
 
-pub use dielectric::*;
-pub use diffuse::*;
-pub use metal::*;
+pub use dielectric_mat::*;
+pub use diffuse_mat::*;
+pub use metal_mat::*;
 pub use some_material::*;
