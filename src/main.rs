@@ -8,7 +8,7 @@ use rust_ray::world::*;
 
 use RenderProgress::*;
 
-const SCENE_DECL: &str = include_str!("../random_scene.txt");
+const SCENE_YAML: &str = include_str!("../random_scene.yaml");
 
 type SomeScene = Scene<SomeObject>;
 
@@ -53,7 +53,7 @@ fn random_gen(
     }
 }
 
-fn random_scene(loader: &Loader) -> SomeScene {
+fn random_scene(loader: &SceneLoader) -> SomeScene {
     let mut scene = loader.new_scene();
 
     random_gen(&mut scene, 11, 1.0, 0.18, (7.0, 2.0, 1.0));
@@ -65,13 +65,27 @@ fn random_scene(loader: &Loader) -> SomeScene {
 fn main() {
     let start_time = Instant::now();
 
-    let loader = Loader::from_str(SCENE_DECL).expect("load scenario");
+    let renderer_loader = RendererLoader::new();
+    let camera_loader = CameraLoader::new();
+    let scene_loader = SceneLoader::new();
 
-    let mut image = loader.new_image();
-    let camera = loader.new_camera();
-    let scene = random_scene(&loader);
+    let mut parser = Parser::new();
+    parser.register(&renderer_loader);
+    parser.register(&camera_loader);
+    parser.register(&scene_loader);
+    parser.parse(SCENE_YAML).expect("load scenario");
 
-    let mut renderer = loader.new_renderer(scene.into(), &camera, &mut image);
+    let scene = random_scene(&scene_loader);
+    let camera = camera_loader.new_camera(renderer_loader.aspect_ratio());
+    let mut image = renderer_loader.new_image();
+    println!("image: {}, {}", image.width(), image.height());
+
+    let mut renderer = renderer_loader.new_renderer(scene.into(), &camera, &mut image);
+    println!("num_threads: {}", renderer.num_threads);
+    println!("samples: {}", renderer.samples_per_pixel);
+    println!("max_depth: {}", renderer.max_depth);
+    println!("-----");
+
     let mut prev_progress = 0;
     let mut prev_save = start_time;
     while let InProgress(progress) = renderer.next() {
@@ -111,8 +125,3 @@ fn main() {
 
     println!("done.");
 }
-
-// TODO:
-//   rendering performance:
-//      - [done] render pixels in multiple threads
-//      - add voxels for objects collection

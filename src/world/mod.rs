@@ -1,6 +1,5 @@
 mod camera;
-mod loader;
-mod loader_error;
+mod loaders;
 mod materials;
 mod methods;
 mod renderer;
@@ -9,8 +8,7 @@ mod some_object;
 mod sphere_object;
 
 pub use camera::*;
-pub use loader::*;
-pub use loader_error::*;
+pub use loaders::*;
 pub use materials::*;
 pub use methods::*;
 pub use renderer::*;

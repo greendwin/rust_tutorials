@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use num_cpus;
-
 use super::camera::Camera;
 use crate::math::*;
 use crate::utils::*;
@@ -26,12 +24,13 @@ struct JobResult {
 }
 
 pub struct Renderer<'a, Scene, Target> {
-    samples_per_pixel: usize,
-    max_depth: usize,
+    pub samples_per_pixel: usize,
+    pub max_depth: usize,
 
-    scene: Arc<Scene>,
-    camera: &'a Camera,
-    target: &'a mut Target,
+    pub scene: Arc<Scene>,
+    pub camera: &'a Camera,
+    pub target: &'a mut Target,
+    pub num_threads: usize,
 
     // iteration data
     jobs: JobRunner<JobResult>,
@@ -49,6 +48,7 @@ where
     pub fn new(
         samples_per_pixel: usize,
         max_depth: usize,
+        num_threads: usize,
         scene: Arc<Scene>,
         camera: &'a Camera,
         target: &'a mut Target,
@@ -58,12 +58,13 @@ where
         Self {
             samples_per_pixel,
             max_depth,
+            num_threads,
             scene,
             camera,
             target,
 
             // iteration
-            jobs: JobRunner::new(num_cpus::get()),
+            jobs: JobRunner::new(num_threads),
             cur_y: 0,
             cur_samples: 0,
             accum_colors: vec![Vec3::zero(); num_pixels],

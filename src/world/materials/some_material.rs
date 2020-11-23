@@ -1,8 +1,8 @@
 use crate::math::*;
 
-use super::dielectric::DielectricMat;
-use super::diffuse::DiffuseMat;
-use super::metal::MetalMat;
+use super::dielectric_mat::DielectricMat;
+use super::diffuse_mat::DiffuseMat;
+use super::metal_mat::MetalMat;
 
 #[derive(Debug, Copy, Clone)]
 pub enum SomeMaterial {
