@@ -30,12 +30,12 @@ impl_from!(
     GlowMat => Glow);
 
 impl Material for SomeMaterial {
-    fn hit(&self, ray_in: &Ray, hit: &Hit) -> HitResult {
+    fn scatter(&self, ray_in: &Ray, hit: &Hit) -> ScatterResult {
         match self {
-            Diff(mat) => mat.hit(ray_in, hit),
-            Di(mat) => mat.hit(ray_in, hit),
-            Metal(mat) => mat.hit(ray_in, hit),
-            Glow(mat) => mat.hit(ray_in, hit),
+            Diff(mat) => mat.scatter(ray_in, hit),
+            Di(mat) => mat.scatter(ray_in, hit),
+            Metal(mat) => mat.scatter(ray_in, hit),
+            Glow(mat) => mat.scatter(ray_in, hit),
         }
     }
 }

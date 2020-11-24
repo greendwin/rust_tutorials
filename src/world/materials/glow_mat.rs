@@ -15,16 +15,16 @@ impl GlowMat {
 }
 
 impl Material for GlowMat {
-    fn hit(&self, ray: &Ray, hit: &Hit) -> HitResult {
+    fn scatter(&self, ray: &Ray, hit: &Hit) -> ScatterResult {
         let norm_dir = ray.dir.norm();
         let scale = norm_dir.dot(hit.norm).abs().powi(2);
 
         if random() > scale {
             // pass through
             let next = hit.pt + norm_dir * 0.1;
-            return HitResult::scatter(Ray::new(next, ray.dir), Vec3::new(1, 1, 1));
+            return ScatterResult::scatter(Ray::new(next, ray.dir), Vec3::new(1, 1, 1));
         }
 
-        HitResult::glow(self.color * scale)
+        ScatterResult::glow(self.color * scale)
     }
 }

@@ -15,7 +15,7 @@ impl DiffuseMat {
 }
 
 impl Material for DiffuseMat {
-    fn hit(&self, _ray_in: &Ray, hit: &Hit) -> HitResult {
+    fn scatter(&self, _ray_in: &Ray, hit: &Hit) -> ScatterResult {
         let mut next_dir = hit.norm + rand_vec3_in_unit_sphere().norm();
         // let next_dir = hit.norm + rand_vec3_in_hemisphere(hit.norm); // old times
 
@@ -23,6 +23,6 @@ impl Material for DiffuseMat {
             next_dir = hit.norm;
         }
 
-        HitResult::scatter(Ray::new(hit.pt, next_dir), self.albedo)
+        ScatterResult::scatter(Ray::new(hit.pt, next_dir), self.albedo)
     }
 }

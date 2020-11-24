@@ -16,7 +16,7 @@ impl DielectricMat {
 }
 
 impl Material for DielectricMat {
-    fn hit(&self, ray_in: &Ray, hit: &Hit) -> HitResult {
+    fn scatter(&self, ray_in: &Ray, hit: &Hit) -> ScatterResult {
         let attenuation = Vec3::new(1, 1, 1);
 
         let refraction_ratio = if hit.front_face {
@@ -37,7 +37,7 @@ impl Material for DielectricMat {
             refract(norm_dir, hit.norm, refraction_ratio)
         };
 
-        HitResult::scatter(Ray::new(hit.pt, out_dir), attenuation)
+        ScatterResult::scatter(Ray::new(hit.pt, out_dir), attenuation)
     }
 }
 

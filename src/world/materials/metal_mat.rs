@@ -18,14 +18,14 @@ impl MetalMat {
 }
 
 impl Material for MetalMat {
-    fn hit(&self, ray_in: &Ray, hit: &Hit) -> HitResult {
+    fn scatter(&self, ray_in: &Ray, hit: &Hit) -> ScatterResult {
         let reflected = reflect(ray_in.dir.norm(), hit.norm);
         let next_dir = reflected + rand_vec3_in_unit_sphere() * self.fuzz;
 
         if next_dir.dot(hit.norm) <= 0.0 {
-            return HitResult::None;
+            return ScatterResult::None;
         }
 
-        HitResult::scatter(Ray::new(hit.pt, next_dir), self.albedo)
+        ScatterResult::scatter(Ray::new(hit.pt, next_dir), self.albedo)
     }
 }

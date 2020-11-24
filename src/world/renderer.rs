@@ -157,8 +157,8 @@ fn ray_color(ray: &Ray, ambient_grad: &(Vec3, Vec3), scene: &impl HitRay, depth:
     }
 
     if let Some((hit, mat)) = scene.hit(ray, 0.001, f64::MAX) {
-        use HitResult::*;
-        return match mat.hit(&ray, &hit) {
+        use ScatterResult::*;
+        return match mat.scatter(&ray, &hit) {
             Scatter { scatter, color } => {
                 color * ray_color(&scatter, ambient_grad, scene, depth - 1)
             }
