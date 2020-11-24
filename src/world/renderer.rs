@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use super::camera::Camera;
+use super::{Camera, Scene};
 use crate::math::*;
 use crate::utils::*;
 
@@ -41,20 +41,18 @@ pub struct Renderer<'a, Scene, Target> {
     accum_colors: Vec<Vec3>,
 }
 
-impl<'a, Scene, Target> Renderer<'a, Scene, Target>
+impl<'a, Scn: Scene, Tgt: RenderTarget> Renderer<'a, Scn, Tgt>
 where
-    Scene: HitRay,
-    Scene: Sync + Send + 'static,
-    Target: RenderTarget,
+    Scn: Sync + Send + 'static,
 {
     pub fn new(
         samples_per_pixel: usize,
         max_depth: usize,
         ambient_grad: (Vec3, Vec3),
         num_threads: usize,
-        scene: Arc<Scene>,
+        scene: Arc<Scn>,
         camera: &'a Camera,
-        target: &'a mut Target,
+        target: &'a mut Tgt,
     ) -> Self {
         let num_pixels = target.width() * target.height();
 
@@ -75,7 +73,7 @@ where
         }
     }
 
-    pub fn target_mut(&mut self) -> &mut Target {
+    pub fn target_mut(&mut self) -> &mut Tgt {
         &mut self.target
     }
 

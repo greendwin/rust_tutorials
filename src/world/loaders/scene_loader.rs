@@ -4,11 +4,10 @@ use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-pub type SomeScene = Scene<SomeObject>;
-
 pub struct SceneLoader {
     materials: RefCell<HashMap<String, SomeMaterial>>,
     objects: RefCell<Vec<SomeObject>>,
+    lights: RefCell<Vec<SomeLight>>,
 }
 
 impl SceneLoader {
@@ -16,14 +15,19 @@ impl SceneLoader {
         Self {
             materials: RefCell::new(HashMap::new()),
             objects: RefCell::new(Vec::new()),
+            lights: RefCell::new(Vec::new()),
         }
     }
 
     pub fn new_scene(&self) -> SomeScene {
-        let mut scene = Scene::new();
+        let mut scene = SomeScene::new();
 
         for obj in self.objects.borrow().iter() {
-            scene.add(obj.clone());
+            scene.add_obj(obj.clone());
+        }
+
+        for light in self.lights.borrow().iter() {
+            scene.add_light(light.clone());
         }
 
         scene
@@ -71,6 +75,14 @@ enum ObjectConfig {
     },
 }
 
+#[derive(Deserialize)]
+struct LightConfig {
+    center: (f64, f64, f64),
+    radius: f64,
+    color: (f64, f64, f64),
+    intensity: f64,
+}
+
 impl<'a> ParserPlugin<'a> for SceneLoader {
     fn init(&'a self, parser: &mut Parser<'a>) {
         parser.add_cmd("materials", move |data| {
@@ -94,6 +106,22 @@ impl<'a> ParserPlugin<'a> for SceneLoader {
                         mats.insert(name, GlowMat::new(color).into());
                     }
                 }
+            }
+
+            Ok(())
+        });
+
+        parser.add_cmd("lights", move |data| {
+            let data: Vec<LightConfig> = data;
+            let mut lights = self.lights.borrow_mut();
+
+            for lgt in data {
+                lights.push(LightObject::new(
+                    lgt.center,
+                    lgt.radius,
+                    lgt.color,
+                    lgt.intensity,
+                ));
             }
 
             Ok(())

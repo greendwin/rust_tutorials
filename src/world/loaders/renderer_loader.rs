@@ -1,7 +1,7 @@
 use crate::bitmap::Bitmap;
-use crate::math::{HitRay, Vec3};
+use crate::math::Vec3;
 use crate::utils::{Parser, ParserPlugin};
-use crate::world::{Camera, RenderTarget, Renderer};
+use crate::world::{Camera, RenderTarget, Renderer, Scene};
 use serde::Deserialize;
 use std::cell::Cell;
 use std::sync::Arc;
@@ -35,16 +35,14 @@ impl RendererLoader {
         Bitmap::new(width, height, (0, 0, 0))
     }
 
-    pub fn new_renderer<'a, Scene, Target>(
+    pub fn new_renderer<'a, Scn: Scene, Tgt: RenderTarget>(
         &self,
-        scene: Arc<Scene>,
+        scene: Arc<Scn>,
         camera: &'a Camera,
-        target: &'a mut Target,
-    ) -> Renderer<'a, Scene, Target>
+        target: &'a mut Tgt,
+    ) -> Renderer<'a, Scn, Tgt>
     where
-        Scene: HitRay,
-        Scene: Sync + Send + 'static,
-        Target: RenderTarget,
+        Scn: Sync + Send + 'static,
     {
         Renderer::new(
             self.samples.get(),

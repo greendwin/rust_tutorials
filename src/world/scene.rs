@@ -1,31 +1,30 @@
 use crate::math::*;
 
-pub struct Scene<Obj> {
-    objs: Vec<Obj>,
+pub trait Scene {
+    type Mat: Material;
+    type Obj: HitRay<Mat = Self::Mat>;
+    type Light: HitRay<Mat = Self::Mat>;
+
+    fn objs(&self) -> &[Self::Obj];
+    fn lights(&self) -> &[Self::Light];
 }
 
-impl<Obj> Scene<Obj> {
-    pub fn new() -> Self {
-        Self { objs: Vec::new() }
-    }
-
-    pub fn add(&mut self, obj: impl Into<Obj>) {
-        self.objs.push(obj.into());
-    }
-}
-
-impl<Obj> HitRay for Scene<Obj>
-where
-    Obj: HitRay,
-{
-    type Mat = Obj::Mat;
+impl<T: Scene> HitRay for T {
+    type Mat = <Self as Scene>::Mat;
 
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, Self::Mat)> {
         let mut closest_hit = None;
         let mut cur_t_max = t_max;
 
-        for obj in &self.objs {
+        for obj in self.objs() {
             if let Some((hit, mat)) = obj.hit(ray, t_min, cur_t_max) {
+                cur_t_max = hit.t;
+                closest_hit.replace((hit, mat));
+            }
+        }
+
+        for lgt in self.lights() {
+            if let Some((hit, mat)) = lgt.hit(ray, t_min, cur_t_max) {
                 cur_t_max = hit.t;
                 closest_hit.replace((hit, mat));
             }

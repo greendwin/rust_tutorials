@@ -28,8 +28,11 @@ materials:
   - { name: red, type: diff, color: [0.9, 0.3, 0.1] }
   - { name: green, type: metal, color: [0.4, 0.8, 0.1], fuzz: 0.3 }
   - { name: metal, type: metal, color: [0.7, 0.6, 0.5], fuzz: 0.05 }
-  - { name: white_glow, type: glow, color: [8, 8, 6] }
-  - { name: red_glow, type: glow, color: [30, 0.5, 0.2] }
+  # - { name: white_glow, type: glow, color: [8, 8, 6] }
+  # - { name: red_glow, type: glow, color: [30, 0.5, 0.2] }
+
+lights:
+  - { center: [0.58, 2.2, 2.74], radius: 0.07, color: [0.8, 0.8, 0.6], intensity: 100 }
 
 objects:
   - { type: sphere, material: ground, center: [0, -1000, 0], radius: 1000 }
@@ -39,4 +42,3 @@ objects:
   # - { type: sphere, material: red, center: [0.58, 0.95, 2.74], radius: 0.2 }
   - { type: sphere, material: glass, center: [0.58, 0.95, 2.74], radius: 0.2 }
   - { type: sphere, material: glass, center: [0.58, 0.95, 2.74], radius: -0.18 }
-  - { type: sphere, material: white_glow, center: [0.58, 2.2, 2.74], radius: 0.07 }
