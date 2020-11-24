@@ -129,8 +129,8 @@ fn render_next<Scene, Target>(
     let v_last = (target.height() - 1) as f64;
 
     for x in 0..target.width() {
-        let u = inv_lerp(x as f64 + random(), 0.0, u_last);
-        let v = inv_lerp(cur_y as f64 + random(), 0.0, v_last);
+        let u = (x as f64 + random()).inv_lerp(0.0, u_last);
+        let v = (cur_y as f64 + random()).inv_lerp(0.0, v_last);
         let ray = camera.get_ray(u, v);
 
         let scene = Arc::clone(&scene);
@@ -169,5 +169,5 @@ fn ray_color(ray: &Ray, ambient_grad: &(Vec3, Vec3), scene: &impl HitRay, depth:
 
     let norm_dir = ray.dir.norm();
     let t = 0.5 * (norm_dir.y + 1.0);
-    lerp(t, ambient_grad.0, ambient_grad.1)
+    t.lerp(ambient_grad.0, ambient_grad.1)
 }

@@ -1,9 +1,9 @@
 use super::bitmap::{Bitmap, Color};
-use crate::math::{clamp, Vec3};
+use crate::math::*;
 use crate::world::RenderTarget;
 
 fn lerp_ratio_to_u8(v: f64) -> u8 {
-    (256.0 * clamp(v, 0.0, 0.99999)) as u8
+    (256.0 * v.clamp(0.0, 0.99999)) as u8
 }
 
 impl From<Vec3> for Color {

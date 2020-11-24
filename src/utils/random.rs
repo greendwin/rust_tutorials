@@ -10,7 +10,7 @@ pub fn random() -> f64 {
 
 #[inline]
 pub fn rand_range(min: impl Into<f64>, max: impl Into<f64>) -> f64 {
-    lerp_unclamped(random(), min.into(), max.into())
+    random().lerp_unclamped(min.into(), max.into())
 }
 
 #[inline]

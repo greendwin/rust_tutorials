@@ -1,54 +1,74 @@
-use num::Float;
-use std::f64;
+use num::{Float, One, Zero};
+use std::f64::consts::PI;
 use std::ops::*;
 
-#[inline]
-pub fn clamp<T>(val: T, min: T, max: T) -> T
-where
-    T: Float,
-{
-    val.max(min).min(max)
+pub trait Sqr {
+    fn sqr(self) -> Self;
 }
 
-#[inline]
-pub fn clamp01<T>(val: T) -> T
-where
-    T: Float,
-{
-    clamp(val, T::zero(), T::one())
-}
-
-#[inline]
-pub fn lerp<T, U>(t: T, a: U, b: U) -> U
-where
-    T: Float,
-    U: Copy + Add<Output = U> + Sub<Output = U> + Mul<T, Output = U>,
-{
-    a + (b - a) * clamp01(t)
-}
-
-#[inline]
-pub fn lerp_unclamped<T, U>(t: T, a: U, b: U) -> U
-where
-    T: Float,
-    U: Copy + Add<Output = U> + Sub<Output = U> + Mul<T, Output = U>,
-{
-    a + (b - a) * t
-}
-
-#[inline]
-pub fn inv_lerp<T>(val: T, a: T, b: T) -> T
-where
-    T: Float,
-{
-    if a == b {
-        return T::zero();
+impl<T: Float> Sqr for T {
+    fn sqr(self) -> Self {
+        self * self
     }
-
-    (val - a) / (b - a)
 }
 
-#[inline]
-pub fn deg_to_rad(deg: f64) -> f64 {
-    deg * f64::consts::PI / 180.0
+pub trait Clamp: Zero + One {
+    fn clamp(self, min: Self, max: Self) -> Self;
+
+    #[inline]
+    fn clamp01(self) -> Self {
+        self.clamp(Self::zero(), Self::one())
+    }
+}
+
+impl<T: Float> Clamp for T {
+    #[inline]
+    fn clamp(self, min: T, max: T) -> T {
+        self.max(min).min(max)
+    }
+}
+
+pub trait Lerp<U>: Clamp {
+    fn lerp_unclamped(self, a: U, b: U) -> U;
+
+    fn lerp(self, a: U, b: U) -> U {
+        self.clamp01().lerp_unclamped(a, b)
+    }
+}
+
+impl<T, U> Lerp<U> for T
+where
+    T: Float,
+    U: Copy + Add<Output = U> + Sub<Output = U> + Mul<Self, Output = U>,
+{
+    #[inline]
+    fn lerp_unclamped(self, a: U, b: U) -> U {
+        a + (b - a) * self
+    }
+}
+
+pub trait InvLerp<U = Self> {
+    fn inv_lerp(self, a: Self, b: Self) -> U;
+}
+
+impl<T: Float> InvLerp for T {
+    #[inline]
+    fn inv_lerp(self, a: Self, b: Self) -> Self {
+        if a == b {
+            return T::zero();
+        }
+
+        (self - a) / (b - a)
+    }
+}
+
+pub trait DegToRad {
+    fn deg_to_rad(self) -> Self;
+}
+
+impl DegToRad for f64 {
+    #[inline]
+    fn deg_to_rad(self) -> f64 {
+        self * PI / 180.0
+    }
 }
