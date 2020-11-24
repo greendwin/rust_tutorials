@@ -52,6 +52,12 @@ enum MaterialConfig {
         color: (f64, f64, f64),
         fuzz: f64,
     },
+
+    #[serde(rename = "glow")]
+    Glow {
+        name: String,
+        color: (f64, f64, f64),
+    },
 }
 
 #[derive(Deserialize)]
@@ -83,6 +89,9 @@ impl<'a> ParserPlugin<'a> for SceneLoader {
                     }
                     Metal { name, color, fuzz } => {
                         mats.insert(name, MetalMat::new(color, fuzz).into());
+                    }
+                    Glow { name, color } => {
+                        mats.insert(name, GlowMat::new(color).into());
                     }
                 }
             }

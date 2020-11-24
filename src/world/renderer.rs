@@ -32,6 +32,8 @@ pub struct Renderer<'a, Scene, Target> {
     pub target: &'a mut Target,
     pub num_threads: usize,
 
+    pub ambient_grad: (Vec3, Vec3),
+
     // iteration data
     jobs: JobRunner<JobResult>,
     cur_y: usize,
@@ -48,6 +50,7 @@ where
     pub fn new(
         samples_per_pixel: usize,
         max_depth: usize,
+        ambient_grad: (Vec3, Vec3),
         num_threads: usize,
         scene: Arc<Scene>,
         camera: &'a Camera,
@@ -58,6 +61,7 @@ where
         Self {
             samples_per_pixel,
             max_depth,
+            ambient_grad,
             num_threads,
             scene,
             camera,
@@ -84,6 +88,7 @@ where
             self.target.height() - self.cur_y - 1, // iterate lines top-down for better preview
             self.cur_samples,
             &mut self.accum_colors,
+            self.ambient_grad,
             self.max_depth,
             &mut self.jobs,
             self.camera,
@@ -109,6 +114,7 @@ fn render_next<Scene, Target>(
     cur_y: usize,
     cur_samples: usize,
     accum_colors: &mut [Vec3],
+    ambient_grad: (Vec3, Vec3),
     max_depth: usize,
     jobs: &mut JobRunner<JobResult>,
     camera: &Camera,
@@ -130,7 +136,7 @@ fn render_next<Scene, Target>(
         let scene = Arc::clone(&scene);
 
         jobs.add_job(move || {
-            let color = ray_color(&ray, &*scene, max_depth as i32);
+            let color = ray_color(&ray, &ambient_grad, &*scene, max_depth as i32);
 
             JobResult { x, y: cur_y, color }
         });
@@ -145,20 +151,23 @@ fn render_next<Scene, Target>(
     }
 }
 
-fn ray_color(ray: &Ray, scene: &impl HitRay, depth: i32) -> Vec3 {
+fn ray_color(ray: &Ray, ambient_grad: &(Vec3, Vec3), scene: &impl HitRay, depth: i32) -> Vec3 {
     if depth <= 0 {
         return Vec3::zero();
     }
 
     if let Some((hit, mat)) = scene.hit(ray, 0.001, f64::MAX) {
-        if let Some((next_ray, color)) = mat.scatter(&ray, &hit) {
-            return color * ray_color(&next_ray, scene, depth - 1);
-        }
-
-        return Vec3::zero();
+        use HitResult::*;
+        return match mat.hit(&ray, &hit) {
+            Scatter { scatter, color } => {
+                color * ray_color(&scatter, ambient_grad, scene, depth - 1)
+            }
+            Glow { color } => color,
+            None => Vec3::zero(),
+        };
     }
 
     let norm_dir = ray.dir.norm();
     let t = 0.5 * (norm_dir.y + 1.0);
-    lerp(t, Vec3::new(1, 1, 1), Vec3::new(0.5, 0.7, 1.0))
+    lerp(t, ambient_grad.0, ambient_grad.1)
 }

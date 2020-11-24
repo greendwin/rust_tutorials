@@ -1,7 +1,8 @@
 use crate::bitmap::Bitmap;
-use crate::math::HitRay;
+use crate::math::{HitRay, Vec3};
 use crate::utils::{Parser, ParserPlugin};
 use crate::world::{Camera, RenderTarget, Renderer};
+use serde::Deserialize;
 use std::cell::Cell;
 use std::sync::Arc;
 
@@ -10,6 +11,7 @@ pub struct RendererLoader {
     samples: Cell<usize>,
     num_threads: Cell<usize>,
     max_depth: Cell<usize>,
+    ambient_grad: Cell<(Vec3, Vec3)>,
 }
 
 impl RendererLoader {
@@ -19,6 +21,7 @@ impl RendererLoader {
             samples: Cell::new(100),
             max_depth: Cell::new(50),
             num_threads: Cell::new(num_cpus::get()),
+            ambient_grad: Cell::new((Vec3::new(1, 1, 1), Vec3::new(0.5, 0.7, 1.0))),
         }
     }
 
@@ -46,12 +49,19 @@ impl RendererLoader {
         Renderer::new(
             self.samples.get(),
             self.max_depth.get(),
+            self.ambient_grad.get(),
             self.num_threads.get(),
             scene,
             camera,
             target,
         )
     }
+}
+
+#[derive(Deserialize)]
+struct AmbientConfig {
+    from: (f64, f64, f64),
+    to: (f64, f64, f64),
 }
 
 impl<'a> ParserPlugin<'a> for RendererLoader {
@@ -68,6 +78,14 @@ impl<'a> ParserPlugin<'a> for RendererLoader {
             let data: usize = data;
 
             self.samples.set(data);
+
+            Ok(())
+        });
+
+        parser.add_cmd("ambient", move |data| {
+            let data: AmbientConfig = data;
+
+            self.ambient_grad.set((data.from.into(), data.to.into()));
 
             Ok(())
         });
