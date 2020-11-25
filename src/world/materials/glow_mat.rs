@@ -22,7 +22,7 @@ impl Material for GlowMat {
         if random() > scale {
             // pass through
             let next = hit.pt + norm_dir * 0.1;
-            return ScatterResult::scatter(Ray::new(next, ray.dir), Vec3::new(1, 1, 1));
+            return ScatterResult::scatter(Ray::new(next, ray.dir), Vec3::new(1, 1, 1), 0.0);
         }
 
         ScatterResult::glow(self.color * scale)

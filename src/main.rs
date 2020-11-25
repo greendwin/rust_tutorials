@@ -7,7 +7,8 @@ use rust_ray::world::*;
 
 use RenderProgress::*;
 
-const SCENE_YAML: &str = include_str!("../shadow_scene.yaml");
+// const SCENE_YAML: &str = include_str!("../shadow_scene.yaml");
+const SCENE_YAML: &str = include_str!("../random_shadows.yaml");
 
 fn main() {
     let start_time = Instant::now();

@@ -3,14 +3,24 @@ use super::vec3::Vec3;
 
 #[derive(Clone, Debug)]
 pub enum ScatterResult {
-    Scatter { scatter: Ray, color: Vec3 },
-    Glow { color: Vec3 },
+    Scatter {
+        scatter: Ray,
+        color: Vec3,
+        light_absorb: f64,
+    },
+    Glow {
+        color: Vec3,
+    },
     None,
 }
 
 impl ScatterResult {
-    pub fn scatter(scatter: Ray, color: Vec3) -> Self {
-        Self::Scatter { scatter, color }
+    pub fn scatter(scatter: Ray, color: Vec3, light_absorb: f64) -> Self {
+        Self::Scatter {
+            scatter,
+            color,
+            light_absorb,
+        }
     }
 
     pub fn glow(color: Vec3) -> Self {

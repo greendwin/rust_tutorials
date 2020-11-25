@@ -37,7 +37,7 @@ impl Material for DielectricMat {
             refract(norm_dir, hit.norm, refraction_ratio)
         };
 
-        ScatterResult::scatter(Ray::new(hit.pt, out_dir), attenuation)
+        ScatterResult::scatter(Ray::new(hit.pt, out_dir), attenuation, 0.01)
     }
 }
 

@@ -1,4 +1,4 @@
-use super::materials::GlowMat;
+use super::{GlowMat, LightDecl};
 use crate::math::*;
 use std::marker::PhantomData;
 
@@ -24,15 +24,6 @@ impl<Mat> LightObject<Mat> {
             _marker: PhantomData,
         }
     }
-
-    pub fn color_at(&self, pt: Vec3) -> Vec3 {
-        let dist2 = (pt - self.sphere.center).length_squared();
-        if dist2 <= self.sphere.radius.sqr() {
-            return self.color;
-        }
-
-        self.color * self.intensity / dist2
-    }
 }
 
 impl<Mat> HitRay for LightObject<Mat>
@@ -46,6 +37,32 @@ where
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, Mat)> {
         self.sphere
             .hit(&ray, t_min, t_max)
-            .map(|hit| (hit, GlowMat::new(self.color_at(ray.orig)).into()))
+            // .map(|hit| (hit, GlowMat::new(self.color).into()))
+            .map(|hit| (hit, GlowMat::new(Vec3::zero()).into()))
+    }
+}
+
+impl<Mat> LightDecl for LightObject<Mat>
+where
+    Mat: Material + Clone,
+    Mat: From<GlowMat>,
+{
+    #[inline]
+    fn orig(&self) -> Vec3 {
+        self.sphere.center
+    }
+
+    #[inline]
+    fn radius(&self) -> f64 {
+        self.sphere.radius
+    }
+
+    fn color_at(&self, pt: Vec3) -> Vec3 {
+        let dist2 = (pt - self.sphere.center).length_squared();
+        if dist2 <= self.sphere.radius.sqr() {
+            return self.color;
+        }
+
+        self.color * self.intensity / dist2
     }
 }

@@ -26,6 +26,6 @@ impl Material for MetalMat {
             return ScatterResult::None;
         }
 
-        ScatterResult::scatter(Ray::new(hit.pt, next_dir), self.albedo)
+        ScatterResult::scatter(Ray::new(hit.pt, next_dir), self.albedo, 0.01)
     }
 }

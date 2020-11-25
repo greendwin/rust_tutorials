@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use super::{Camera, Scene};
+use super::{Camera, LightDecl, Scene};
 use crate::math::*;
 use crate::utils::*;
 
@@ -137,7 +137,7 @@ where
     }
 }
 
-fn render_next<Scene, Target>(
+fn render_next<Scn: Scene, Tgt: RenderTarget>(
     cur_y: usize,
     cur_samples: usize,
     accum_colors: &mut [Vec3],
@@ -145,12 +145,10 @@ fn render_next<Scene, Target>(
     max_depth: usize,
     jobs: &mut JobRunner<JobResult>,
     camera: &Camera,
-    scene: Arc<Scene>,
-    target: &mut Target,
+    scene: Arc<Scn>,
+    target: &mut Tgt,
 ) where
-    Scene: HitRay,
-    Scene: Sync + Send + 'static,
-    Target: RenderTarget,
+    Scn: Sync + Send + 'static,
 {
     let u_last = (target.width() - 1) as f64;
     let v_last = (target.height() - 1) as f64;
@@ -178,7 +176,7 @@ fn render_next<Scene, Target>(
     }
 }
 
-fn ray_color(ray: &Ray, ambient_grad: &(Vec3, Vec3), scene: &impl HitRay, depth: i32) -> Vec3 {
+fn ray_color(ray: &Ray, ambient_grad: &(Vec3, Vec3), scene: &impl Scene, depth: i32) -> Vec3 {
     if depth <= 0 {
         return Vec3::zero();
     }
@@ -186,15 +184,47 @@ fn ray_color(ray: &Ray, ambient_grad: &(Vec3, Vec3), scene: &impl HitRay, depth:
     if let Some((hit, mat)) = scene.hit(ray, 0.001, f64::MAX) {
         use ScatterResult::*;
         return match mat.scatter(&ray, &hit) {
-            Scatter { scatter, color } => {
-                color * ray_color(&scatter, ambient_grad, scene, depth - 1)
-            }
             Glow { color } => color,
             None => Vec3::zero(),
+            Scatter {
+                scatter,
+                color,
+                light_absorb,
+            } => {
+                let light_amplify = calc_lighting(scatter.orig, scene) * light_absorb;
+                color * (light_amplify + ray_color(&scatter, ambient_grad, scene, depth - 1))
+            }
         };
     }
 
     let norm_dir = ray.dir.norm();
     let t = 0.5 * (norm_dir.y + 1.0);
     t.lerp(ambient_grad.0, ambient_grad.1)
+}
+
+fn calc_lighting(pt: Vec3, scene: &impl Scene) -> Vec3 {
+    if scene.lights().is_empty() {
+        return Vec3::zero();
+    }
+
+    let mut light_accum = Vec3::zero();
+
+    for lgt in scene.lights() {
+        let lgt_pt = lgt.orig() + rand_vec3_in_unit_sphere() * lgt.radius();
+        let to_light = Ray::new(pt, lgt_pt - pt);
+
+        let mut in_shadow = false;
+        for obj in scene.objs() {
+            if obj.hit(&to_light, 0.001, f64::MAX).is_some() {
+                in_shadow = true;
+                break;
+            }
+        }
+
+        if !in_shadow {
+            light_accum += lgt.color_at(pt);
+        }
+    }
+
+    light_accum / scene.lights().len() as f64
 }

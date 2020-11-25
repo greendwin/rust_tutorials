@@ -23,6 +23,6 @@ impl Material for DiffuseMat {
             next_dir = hit.norm;
         }
 
-        ScatterResult::scatter(Ray::new(hit.pt, next_dir), self.albedo)
+        ScatterResult::scatter(Ray::new(hit.pt, next_dir), self.albedo, 1.0)
     }
 }

@@ -32,7 +32,7 @@ materials:
   # - { name: red_glow, type: glow, color: [30, 0.5, 0.2] }
 
 lights:
-  - { center: [0.58, 2.2, 2.74], radius: 0.07, color: [0.8, 0.8, 0.6], intensity: 100 }
+  - { center: [0.58, 2.2, 2.74], radius: 0.07, color: [0.8, 0.8, 0.6], intensity: 1 }
 
 objects:
   - { type: sphere, material: ground, center: [0, -1000, 0], radius: 1000 }
