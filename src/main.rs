@@ -37,7 +37,8 @@ fn main() {
 
     let mut prev_progress = 0;
     let mut prev_save = start_time;
-    while let InProgress(progress) = renderer.next() {
+    let mut iter = renderer.iter();
+    while let InProgress(progress) = iter.next() {
         let cur_time = Instant::now();
 
         if prev_progress != progress {
@@ -57,7 +58,7 @@ fn main() {
         // flush intermediate results each 5 seconds
         let since_last_save = cur_time.duration_since(prev_save);
         if since_last_save.as_secs() >= 5 {
-            renderer.target_mut().save("output.bmp").expect("save file");
+            iter.target_mut().save("output.bmp").expect("save file");
             prev_save = cur_time;
         }
     }
