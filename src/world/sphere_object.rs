@@ -1,18 +1,12 @@
 use crate::math::*;
 
 #[derive(Debug, Clone)]
-pub struct SphereObject<Mat>
-where
-    Mat: Material,
-{
+pub struct SphereObject<Mat> {
     pub sphere: Sphere,
     pub material: Mat,
 }
 
-impl<'a, Mat> SphereObject<Mat>
-where
-    Mat: Material,
-{
+impl<'a, Mat> SphereObject<Mat> {
     pub fn new(center: impl Into<Vec3>, radius: impl Into<f64>, material: impl Into<Mat>) -> Self {
         Self {
             sphere: Sphere::new(center, radius),
@@ -21,12 +15,10 @@ where
     }
 }
 
-impl<Mat> HitRay for SphereObject<Mat>
+impl<Mat> HitRay<Mat> for SphereObject<Mat>
 where
-    Mat: Material + Clone,
+    Mat: Clone,
 {
-    type Mat = Mat;
-
     #[inline]
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, Mat)> {
         self.sphere

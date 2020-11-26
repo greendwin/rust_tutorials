@@ -17,10 +17,8 @@ impl From<SomeSphere> for SomeObject {
     }
 }
 
-impl HitRay for SomeObject {
-    type Mat = SomeMaterial;
-
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, Self::Mat)> {
+impl HitRay<SomeMaterial> for SomeObject {
+    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, SomeMaterial)> {
         match self {
             Sphere(p) => p.hit(ray, t_min, t_max),
         }

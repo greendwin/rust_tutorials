@@ -1,16 +1,14 @@
 use super::{GlowMat, LightDecl};
 use crate::math::*;
-use std::marker::PhantomData;
 
 #[derive(Clone, Debug)]
-pub struct LightObject<Mat> {
+pub struct LightObject {
     sphere: Sphere,
     color: Vec3,
-    intensity: f64,            // C*I*1/d^2
-    _marker: PhantomData<Mat>, // use it so that we can make generic HitRay
+    intensity: f64, // C*I*1/d^2
 }
 
-impl<Mat> LightObject<Mat> {
+impl LightObject {
     pub fn new(
         center: impl Into<Vec3>,
         radius: impl Into<f64>,
@@ -21,18 +19,14 @@ impl<Mat> LightObject<Mat> {
             sphere: Sphere::new(center, radius),
             color: color.into(),
             intensity: intensity.into(),
-            _marker: PhantomData,
         }
     }
 }
 
-impl<Mat> HitRay for LightObject<Mat>
+impl<Mat> HitRay<Mat> for LightObject
 where
-    Mat: Material + Clone,
     Mat: From<GlowMat>,
 {
-    type Mat = Mat;
-
     #[inline]
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(Hit, Mat)> {
         self.sphere
@@ -42,11 +36,7 @@ where
     }
 }
 
-impl<Mat> LightDecl for LightObject<Mat>
-where
-    Mat: Material + Clone,
-    Mat: From<GlowMat>,
-{
+impl LightDecl for LightObject {
     #[inline]
     fn orig(&self) -> Vec3 {
         self.sphere.center

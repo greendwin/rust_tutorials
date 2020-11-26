@@ -1,10 +1,8 @@
 use super::{LightObject, Scene, SomeMaterial, SomeObject};
 
-pub type SomeLight = LightObject<SomeMaterial>;
-
 pub struct SomeScene {
     objs: Vec<SomeObject>,
-    lights: Vec<SomeLight>,
+    lights: Vec<LightObject>,
 }
 
 impl SomeScene {
@@ -19,7 +17,7 @@ impl SomeScene {
         self.objs.push(obj.into());
     }
 
-    pub fn add_light(&mut self, light: impl Into<SomeLight>) {
+    pub fn add_light(&mut self, light: impl Into<LightObject>) {
         self.lights.push(light.into());
     }
 }
@@ -27,13 +25,13 @@ impl SomeScene {
 impl Scene for SomeScene {
     type Mat = SomeMaterial;
     type Obj = SomeObject;
-    type Light = SomeLight;
+    type Light = LightObject;
 
     fn objs(&self) -> &[SomeObject] {
         &self.objs
     }
 
-    fn lights(&self) -> &[SomeLight] {
+    fn lights(&self) -> &[LightObject] {
         &self.lights
     }
 }
