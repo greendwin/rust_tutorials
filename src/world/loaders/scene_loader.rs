@@ -7,7 +7,7 @@ use std::collections::HashMap;
 pub struct SceneLoader {
     materials: RefCell<HashMap<String, SomeMaterial>>,
     objects: RefCell<Vec<SomeObject>>,
-    lights: RefCell<Vec<SomeLight>>,
+    lights: RefCell<Vec<LightObject>>,
 }
 
 impl SceneLoader {
