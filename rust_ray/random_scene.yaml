@@ -1,0 +1,57 @@
+# Note: 111.0 min (6659 sec), PC: 73.4 min (4401 sec)
+image: [1024, 768]
+samples: 500
+
+# 459 sec (323 sec on PC)
+# image: [640, 480]
+# samples: 100
+
+# 105 sec -> 28 sec
+# image: [320, 240]
+# samples: 25
+
+# ??
+image: [240, 180]
+samples: 25
+
+camera:
+  pos: [13, 2, 3]
+  lookat: [0, 0, 0]
+  fov: 20
+  focus: 10
+  aperture: 0.1
+#   aperture: 0
+
+materials:
+  - { name: ground, type: diff, color: [0.5, 0.5, 0.5] }
+  - { name: glass, type: di, refraction: 1.5 }
+  - { name: baloon, type: diff, color: [0.4, 0.2, 0.1] }
+  - { name: metal, type: metal, color: [0.7, 0.6, 0.5], fuzz: 0 }
+
+objects:
+  - { type: sphere, material: ground, center: [0, -1000, 0], radius: 1000 }
+  - { type: sphere, material: glass, center: [0, 1, 0], radius: 1 }
+  - { type: sphere, material: glass, center: [0, 1, 0], radius: -0.95 }
+  - { type: sphere, material: baloon, center: [-4, 1, 0], radius: 1 }
+  - { type: sphere, material: metal, center: [4, 1, 0], radius: 1 }
+
+rnd_gen:
+  - nx: 20
+    nz: 20
+    step: 1.1
+    sphere_radius: 0.18
+    center: [0, 0.17, 0]
+    materials:
+      - { type: diff, weight: 7.0 }
+      - { type: metal, weight: 2.0 }
+      - { type: glass, weight: 1.0, refraction: 2.0, width: 0.1 }
+
+  - nx: 40
+    nz: 40
+    step: 0.5
+    sphere_radius: 0.07
+    center: [0, 0.06, 0]
+    materials:
+      - { type: diff, weight: 5.0 }
+      - { type: metal, weight: 3.0 }
+      - { type: glass, weight: 2.0, refraction: 2.0, width: 0.1 }
